@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O.CarCare – Tỷ trọng nhà đồng</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f4f3f0; --surface:#fcfcfb; --surface-2:#f0efec; --line:#e2e1dc;
+  --text:#0b0b0b; --text-2:#52514e; --muted:#7a7974;
+  --accent:#1c5cab;
+  --s-pvi:#eb6834; --s-tasco:#2a78d6; --s-dbv:#1baf7a; --s-mic:#eda100; --s-pjico:#e87ba4;
+  --good:#1a7f37; --warn:#9a6700; --bad:#c62828;
+  --chip:#e9eef7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111110; --surface:#1a1a19; --surface-2:#242422; --line:#33332f;
+    --text:#ffffff; --text-2:#c3c2b7; --muted:#9a998f;
+    --accent:#86b6ef;
+    --s-pvi:#d95926; --s-tasco:#3987e5; --s-dbv:#199e70; --s-mic:#c98500; --s-pjico:#d55181;
+    --good:#57c47a; --warn:#e0b340; --bad:#ef6b6b;
+    --chip:#243248;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111110; --surface:#1a1a19; --surface-2:#242422; --line:#33332f;
+  --text:#ffffff; --text-2:#c3c2b7; --muted:#9a998f;
+  --accent:#86b6ef;
+  --s-pvi:#d95926; --s-tasco:#3987e5; --s-dbv:#199e70; --s-mic:#c98500; --s-pjico:#d55181;
+  --good:#57c47a; --warn:#e0b340; --bad:#ef6b6b;
+  --chip:#243248;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+header h1{font-size:24px;line-height:1.25;margin:0 0 4px;font-weight:700;letter-spacing:-.01em}
+header p{margin:0;color:var(--text-2)}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--text-2);margin-right:6px}
+h2{font-size:17px;margin:0 0 2px;font-weight:650}
+.sub{color:var(--text-2);margin:0 0 14px;font-size:13px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin:20px 0}
+.g2{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.g2{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.kpi .lab{color:var(--text-2);font-size:12.5px}
+.kpi .val{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:2px 0;font-variant-numeric:tabular-nums}
+.kpi .val small{font-size:14px;font-weight:600;color:var(--text-2)}
+.kpi .note{font-size:12.5px;color:var(--muted)}
+.kpi.hl{border-color:var(--s-pvi);box-shadow:inset 3px 0 0 var(--s-pvi)}
+section{margin-top:16px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--text-2);margin:0 0 8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{fill:var(--text-2);font-size:11px;font-family:inherit}
+svg .axis{stroke:var(--line)}
+svg .mk{cursor:default;transition:opacity .12s}
+svg .mk:hover,svg .mk:focus{opacity:.8;outline:none}
+.tip{position:fixed;pointer-events:none;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:10;opacity:0;transition:opacity .1s;max-width:260px}
+.tip b{font-size:14px}
+.tip .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.tip .k{display:inline-block;width:12px;height:2px;margin-right:6px;vertical-align:middle}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.seg button{background:transparent;border:0;padding:5px 12px;font:inherit;font-size:13px;color:var(--text-2);cursor:pointer}
+.seg button.on{background:var(--chip);color:var(--text);font-weight:600}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.filters input{flex:1 1 200px;min-width:0;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:inherit}
+.chipbtn{border:1px solid var(--line);background:var(--surface);color:var(--text-2);border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.chipbtn.on{background:var(--text);color:var(--surface);border-color:var(--text)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:var(--text-2);font-size:12px;border-bottom:1px solid var(--line);padding:6px 8px;white-space:nowrap;position:sticky;top:0;background:var(--surface)}
+.tbl td{border-bottom:1px solid var(--line);padding:6px 8px;vertical-align:middle}
+.tbl td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl th.n{text-align:right}
+.scroll{max-height:520px;overflow:auto;border-top:1px solid var(--line)}
+.tw{overflow-x:auto}
+.mix{display:flex;height:12px;width:170px;border-radius:3px;overflow:hidden;gap:1px;background:var(--surface)}
+.mix span{display:block;height:100%}
+.pill{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;margin-right:3px;white-space:nowrap}
+.pA{background:color-mix(in srgb,var(--s-pvi) 22%,transparent);color:var(--text)}
+.pB{background:color-mix(in srgb,var(--s-mic) 28%,transparent);color:var(--text)}
+.pC{background:color-mix(in srgb,var(--s-dbv) 25%,transparent);color:var(--text)}
+.pH{background:color-mix(in srgb,var(--s-tasco) 25%,transparent);color:var(--text)}
+.ins{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:800px){.ins{grid-template-columns:minmax(0,1fr)}}
+.ins .card h3{margin:0 0 6px;font-size:15px}
+.ins .card p{margin:0;color:var(--text-2)}
+.ins .num{font-weight:700;color:var(--text)}
+.ins .big{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:2px 0 6px;font-variant-numeric:tabular-nums}
+.ins .big small{font-size:13px;font-weight:500;color:var(--text-2);letter-spacing:0}
+.ins .so{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);color:var(--text)}
+.ins .so b{color:var(--s-pvi)}
+.reco-t td{vertical-align:top;padding:10px 8px}
+.reco-t td.no{font-weight:700;width:28px;color:var(--text-2)}
+.reco-t td.what{font-weight:600;min-width:220px}
+.reco-t td.where{white-space:nowrap;color:var(--text-2)}
+.exec{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+.ex-grid{display:grid;gap:20px;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+@media (max-width:900px){.ex-grid{grid-template-columns:minmax(0,1fr)}}
+.exec h3{font-size:14px;margin:0 0 8px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em}
+.ex-list{margin:0;padding-left:18px}.ex-list li{margin-bottom:6px}
+.ex-dec td{vertical-align:top;padding:8px}.ex-dec td.no{font-weight:700;color:var(--accent);width:20px}
+.ex-risk{margin-top:16px;padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--s-mic) 12%,var(--surface))}
+.appx{margin:36px 0 4px;font-size:17px;color:var(--text-2);border-top:1px solid var(--line);padding-top:20px}
+@media print{body{background:#fff}.tip,details,.seg,.filters{display:none!important}.card{break-inside:avoid;box-shadow:none}.wrap{max-width:none}}
+ol.reco{margin:0;padding-left:20px}
+ol.reco li{margin:0 0 10px}
+ol.reco b{color:var(--text)}
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px;align-items:center}
+@media (max-width:800px){.calc{grid-template-columns:minmax(0,1fr)}}
+.calc label{display:block;font-size:13px;color:var(--text-2);margin:10px 0 4px}
+.calc input[type=range]{width:100%;accent-color:var(--s-pvi)}
+.calc .out{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:600px){.calc .out{grid-template-columns:minmax(0,1fr)}.wide{min-width:680px}.wide2{min-width:480px}}
+.calc .out div{background:var(--surface-2);border-radius:10px;padding:12px}
+.calc .out .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.calc .out .l{font-size:12px;color:var(--text-2)}
+.foot{font-size:12.5px;color:var(--muted);margin-top:24px}
+.foot li{margin-bottom:4px}
+.small{font-size:12.5px;color:var(--muted)}
+
+.opps{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:6px}
+@media (max-width:860px){.opps{grid-template-columns:minmax(0,1fr)}}
+.opp{border:1px solid var(--line);border-radius:10px;padding:14px 14px 8px;background:var(--surface)}
+.opp .hd{display:flex;gap:10px;align-items:flex-start}
+.opp .no{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff}
+.opp h3{margin:0;font-size:15px;line-height:1.3}
+.opp .meta{font-size:12.5px;color:var(--text-2);margin-top:2px}
+.opp .why{margin:10px 0 2px;font-size:13px;color:var(--text-2)}
+.opp .why b{color:var(--text)}
+.opp table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.opp th{font-size:11.5px;font-weight:600;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.opp td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.opp tr:last-child td{border-bottom:0}
+.opp .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.opp .vg{display:block;font-size:11.5px;color:var(--muted)}
+.opp .yes{font-weight:600}
+.opp .no-pvi{color:var(--muted)}
+details summary{cursor:pointer;color:var(--accent);font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="tag">Nội bộ – Ban HK&amp;KHDN</span><span class="tag">Dữ liệu tới 27/09/2026</span><span class="tag">P.TMĐT lập ngày 30/09/2026</span>
+  <h1>O.CarCare × VPBank: Tỷ trọng nhà đồng &amp; dư địa cho BH PVI</h1>
+  <p>Phân tích 2 báo cáo T9.27 (kênh RB và SME) – nhìn thị trường đồng bảo hiểm OPES đang chia cho ai, và BH PVI có thể giành thêm ở đâu.</p>
+</header>
+
+<div class="grid kpis" id="kpis"></div>
+
+<section class="card exec">
+  <h2>Tóm tắt cho lãnh đạo</h2>
+  <p class="sub">Đọc trong 1 phút. Chi tiết và số liệu ở các phần bên dưới.</p>
+  <div class="ex-grid">
+    <div>
+      <h3>Tình hình</h3>
+      <ul class="ex-list">
+        <li>Chương trình O.CarCare qua VPBank bán khoảng <b>36 tỷ phí/tháng</b> (kênh RB), chia cho 4 nhà đồng; TASCO và DBV đang giữ gần 80%.</li>
+        <li>Tuần đầu (21–27/9) BH PVI bán được <b>372 triệu, 3,8% thị phần</b> – khởi đầu ổn, phí bình quân mỗi GCN ngang các nhà đồng khác.</li>
+        <li>Tỷ lệ chia giữa các nhà đồng <b>đang thay đổi</b> (MIC mất gần một nửa từ đầu năm) và phần lớn đi theo từng chi nhánh → BH PVI có thể giành thêm.</li>
+        <li>Chỗ lớn nhất là <b>2 Hub TTKD ô tô</b> (~1/3 tổng phí), nơi BH PVI mới có 0,4%.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Xin ý kiến lãnh đạo</h3>
+      <table class="tbl ex-dec">
+        <thead><tr><th></th><th>Nội dung đề xuất</th><th>Nếu đồng ý</th></tr></thead>
+        <tbody>
+          <tr><td class="no">1</td><td><b>Làm việc với OPES về tỷ lệ chia đơn tại 2 Hub</b> cho BH PVI (đề xuất mục tiêu 10%).</td><td>≈ 1,2 tỷ phí/tháng qua BH PVI, ≈ 0,48 tỷ phần BH PVI giữ lại (tỷ lệ 40%).</td></tr>
+          <tr><td class="no">2</td><td><b>Giao các đơn vị BH PVI phụ trách tập trung 28 chi nhánh ưu tiên</b> (nhóm 2–4) đến hết Sale Contest 31/10.</td><td>Nhóm này bán ≈ 7 tỷ phí/tháng; mỗi 10% giành được ≈ 0,7 tỷ/tháng.</td></tr>
+          <tr><td class="no">3</td><td><b>Hỏi OPES về việc BH PVI tham gia kênh SME.</b></td><td>Mở thêm kênh ≈ 2,3 tỷ phí/tháng, khách tập trung ở Hà Nội.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="ex-risk">
+    <h3>Cần lưu ý trước khi quyết</h3>
+    <ul class="ex-list">
+      <li><b>Mới có 1 tuần số liệu</b> của BH PVI – các tỷ lệ theo Vùng/chi nhánh chỉ là tín hiệu ban đầu.</li>
+      <li><b>Chưa có số liệu bồi thường:</b> bán thêm là nhận thêm 40% rủi ro. Nên theo dõi tỷ lệ bồi thường theo chi nhánh trước khi đẩy mạnh ở diện rộng.</li>
+      <li><b>Trùng kênh với HĐĐL cũ BH PVI – VPBank:</b> đẩy O.CarCare tại chi nhánh có thể lấy bớt doanh thu bán truyền thống của chính BH PVI qua VPBank – cần phối hợp với Ban LK&amp;QLĐL.</li>
+      <li><b>Giả định số liệu:</b> “doanh thu nhà đồng” được hiểu là phí 100% của hợp đồng; nếu là phần phí của riêng nhà đồng thì các con số quy mô cần điều chỉnh.</li>
+    </ul>
+  </div>
+</section>
+<section>
+  <h2 style="margin:8px 0 2px">4 điều rút ra từ số liệu</h2>
+  <p class="sub">Mỗi ô: con số chính → điều đó có nghĩa gì với BH PVI.</p>
+  <div class="ins" id="insights"></div>
+</section>
+<section class="card">
+  <h2>Nên tập trung vào đơn vị VPBank nào?</h2>
+  <p class="sub">Từ 226 đơn vị có doanh thu kênh RB tháng 9, lọc ra 4 nhóm đáng làm trước. Mỗi đơn vị chỉ nằm ở 1 nhóm. “Phí/tháng” là phí tháng 9 quy đổi ra 30 ngày.</p>
+  <div class="opps" id="opps"></div>
+  <details id="full">
+    <summary>Tra cứu toàn bộ 226 đơn vị</summary>
+    <div style="margin-top:12px">
+      <div class="filters">
+        <input id="q" type="search" placeholder="Gõ tên chi nhánh hoặc Vùng…" aria-label="Tìm đơn vị">
+        <div id="chips"></div>
+      </div>
+      <div class="legend" id="lg5"></div>
+      <div class="small" id="tierNote" style="margin-bottom:8px"></div>
+      <div class="tw scroll"><table class="tbl" id="tbl"></table></div>
+    </div>
+  </details>
+</section>
+<section class="card">
+  <h2>Nếu BH PVI đạt X% thị phần thì được bao nhiêu?</h2>
+  <p class="sub">Ước tính theo nhịp tháng 9 (quy đổi 30 ngày). Tỷ lệ BH PVI giữ lại mặc định 40% theo cơ cấu đồng BH với OPES – chỉnh được.</p>
+  <div class="calc">
+    <div>
+      <label for="rShare">Thị phần BH PVI trong phí O.CarCare: <b id="lShare"></b></label>
+      <input type="range" id="rShare" min="1" max="30" step="1" value="10">
+      <div class="small" id="refs"></div>
+      <label for="rKeep">Tỷ lệ BH PVI giữ lại: <b id="lKeep"></b></label>
+      <input type="range" id="rKeep" min="10" max="100" step="5" value="40">
+      <label><input type="checkbox" id="cSme"> Tính cả kênh SME (hiện BH PVI chưa có đơn SME)</label>
+    </div>
+    <div class="out">
+      <div><div class="l">Phí 100% qua BH PVI / tháng</div><div class="v" id="o1"></div></div>
+      <div><div class="l">Phần BH PVI giữ lại / tháng</div><div class="v" id="o2"></div></div>
+      <div><div class="l">Phần BH PVI giữ lại / năm</div><div class="v" id="o3"></div></div>
+    </div>
+  </div>
+</section>
+<section class="card">
+  <h2>Kế hoạch hành động đề xuất</h2>
+  <p class="sub">Theo thứ tự nên làm trước. Người làm và hạn là đề xuất – lãnh đạo điều chỉnh khi duyệt.</p>
+  <div class="tw"><table class="tbl reco-t" id="reco"></table></div>
+</section>
+
+<h2 class="appx">Phụ lục – số liệu chi tiết</h2>
+
+<section class="grid g2">
+  <div class="card">
+    <h2>Thị phần nhà đồng theo tháng</h2>
+    <p class="sub">Tỷ trọng doanh thu (không VAT) – TASCO tăng đều, MIC mất gần một nửa tỷ trọng từ đầu năm.</p>
+    <div class="seg" id="segMonth"><button data-k="rb" class="on">Kênh RB</button><button data-k="sme">Kênh SME</button></div>
+    <div class="legend" id="lg1"></div>
+    <div id="chMonth"></div>
+  </div>
+  <div class="card">
+    <h2>Tháng 9 theo tuần – BH PVI vào cuộc</h2>
+    <p class="sub">Doanh thu RB theo tuần (tỷ đồng). Tuần 01–06/9 chỉ 6 ngày. BH PVI bắt đầu có đơn từ 21/9.</p>
+    <div class="legend" id="lg2"></div>
+    <div id="chWeek"></div>
+  </div>
+</section>
+<section class="card">
+  <h2>Tuần đầu tiên (21–27/9): BH PVI đang có mặt ở đâu?</h2>
+  <p class="sub">Mỗi dòng là một Vùng VPBank, xếp theo quy mô doanh thu tuần. Thanh = cơ cấu nhà đồng; con số bên phải = tỷ trọng của BH PVI.</p>
+  <div class="legend" id="lg3"></div>
+  <div class="tw"><div id="chVung" class="wide"></div></div>
+</section>
+<section class="grid g2">
+  <div class="card">
+    <h2>Kênh SME: nhỏ nhưng MIC đang giữ</h2>
+    <p class="sub">Luỹ kế 01/01–27/09/2026, triệu đồng. Tập trung ở khối Micro Hà Nội.</p>
+    <div class="legend" id="lg4"></div>
+    <div class="tw"><div id="chSme" class="wide2"></div></div>
+  </div>
+  <div class="card">
+    <h2>Đọc nhanh</h2>
+    <div id="quick"></div>
+  </div>
+</section>
+<div class="foot">
+  <b>Lưu ý về số liệu</b>
+  <ul>
+    <li>Nguồn: <i>T9.27 RB TỶ TRỌNG DOANH THU NHÀ ĐỒNG.xlsx</i> và <i>T9.27 TY TRONG NHA DONG SME THANG 9.2026.xlsx</i>. Doanh thu không gồm VAT.</li>
+    <li>Giả định: “doanh thu nhà đồng” là phí 100% của các HĐ đồng BH giữa OPES và từng nhà đồng (khớp với cách hiểu cột TỔNG PHÍ BH trong báo cáo 17h). Nếu thực tế là phần phí của riêng nhà đồng thì các con số quy mô ở mục “X% thị phần” cần điều chỉnh.</li>
+    <li>Tháng 9 chỉ tính tới 27/9 (27 ngày); so sánh T8–T9 theo từng đơn vị đã quy đổi theo ngày. BSH gần như bằng 0 cả năm nên không vẽ. Sheet TTTC ghi “VNI” – hiểu là DBV.</li>
+    <li>BH PVI mới có 1 tuần dữ liệu (21–27/9) nên các tỷ trọng của BH PVI chỉ mang tính tín hiệu ban đầu.</li>
+  </ul>
+</div>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+const D = {"rb":{"MIC":[7067101845.454545,4642804847.272727,7362224462.727273,6128379527.272727,6104328756.363636,5588535107.272727,5886125140.909091,5451849119.999999,3608593862.727273],"PJICO":[3427676986.363636,2223852346.363636,3616504880.909091,3552488151.818182,3772072097.272727,3492227810.909091,4397211980.0,3434163426.3636365,2968367917.272727],"BSH":[12558000.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"DBV":[10705329530.90909,6966402961.818182,11862296096.36364,9896866590.0,11859899921.81818,12102876806.36364,12487496943.63636,10705024136.363638,10260946997.272728],"TASCO":[12733734320.90909,9555595930.0,15292481173.63636,13366614175.45455,14585301042.72727,14712407154.54545,16981592676.36364,14652176711.818184,14744633014.545456],"PVI":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,371699990.9090909]},"sme":{"MIC":[1505285066.3636363,1178760975.4545453,1371049444.5454545,1359441696.3636363,661546149.090909,1430704720.9090908,1142487428.1818182,984881679.090909,907471138.1818182],"PJICO":[443739691.81818175,208305555.45454544,432451572.7272727,446227399.99999994,299296150.0,356603000.0,439311207.27272725,437742000.0,359397350.0],"TASCO":[438067302.7272727,301246267.27272725,475348799.99999994,791492805.4545454,339274441.8181818,863624655.4545455,1001914508.1818181,856046730.9090909,509670812.72727275],"BSH":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"DBV":[387979709.99999994,173557400.0,618705590.0,500289542.7272727,169729434.54545453,456869550.0,332614400.0,439955250.0,313681242.72727275]},"weeks":[{"label":"01–06/9","tot":{"MIC":465533706,"PJICO":344388671,"DBV":1222880254,"TASCO":2028531413}},{"label":"07–13/9","tot":{"MIC":1134729881.818182,"PJICO":809830670.9090909,"DBV":2923038897.272727,"TASCO":4230764800.909091}},{"label":"14–20/9","tot":{"MIC":1195709058,"PJICO":879385046,"DBV":3444565463,"TASCO":4810347054}},{"label":"21–27/9","tot":{"MIC":970664301.8181818,"PJICO":1046015685.4545455,"PVI":371699990.90909094,"DBV":3084861229.0909095,"TASCO":4312541562.727273}}],"vungW4":{"Vùng 1":{"MIC":13697049.999999998,"PJICO":0.0,"PVI":0.0,"TASCO":41065000.0,"DBV":47614000.0},"Vùng 1B":{"MIC":22376000.0,"PJICO":0.0,"PVI":20455749.999999996,"TASCO":16483254.545454545,"DBV":119929058.18181817},"Vùng 2":{"MIC":14317449.999999998,"PJICO":29749999.999999996,"PVI":5834999.999999999,"TASCO":29881500.0,"DBV":22483999.999999996},"Vùng 3":{"MIC":9871000.0,"PJICO":0.0,"PVI":0.0,"TASCO":0.0,"DBV":47955000.0},"Vùng 4":{"MIC":101652400.0,"PJICO":31842000.0,"PVI":5796999.999999999,"TASCO":195410000.0,"DBV":167224300.0},"Vùng 5":{"MIC":0.0,"PJICO":0.0,"PVI":18663999.999999996,"TASCO":352206000.0,"DBV":60146000.0},"Vùng 6":{"MIC":217385160.0,"PJICO":11119000.0,"PVI":35295000.0,"TASCO":319680304.5454545,"DBV":134589900.0},"Vùng 6B":{"MIC":28204000.0,"PJICO":242416300.0,"PVI":47412000.0,"TASCO":168106999.99999997,"DBV":45557000.0},"TTKD ô tô Miền Bắc":{"MIC":116211700.0,"PJICO":7897999.999999999,"PVI":26766000.0,"TASCO":1103894910.0,"DBV":469327941.8181818},"Vùng 7":{"MIC":163628891.8181818,"PJICO":25719000.0,"PVI":101377999.99999999,"TASCO":164049520.0,"DBV":236136780.0},"Vùng 8":{"MIC":0.0,"PJICO":14707050.0,"PVI":16605540.909090908,"TASCO":122364903.63636364,"DBV":193787881.8181818},"Vùng 8B":{"MIC":10319000.0,"PJICO":82825092.72727272,"PVI":0.0,"TASCO":220172630.9090909,"DBV":198603920.90909088},"Vùng 9":{"MIC":6202999.999999999,"PJICO":26832620.0,"PVI":38562350.0,"TASCO":0.0,"DBV":47828920.0},"Vùng 10":{"MIC":223195650.0,"PJICO":275500122.72727275,"PVI":18625550.0,"TASCO":572659530.0,"DBV":243069740.0},"Vùng 11":{"MIC":23314000.0,"PJICO":255696050.0,"PVI":19428000.0,"TASCO":249198000.0,"DBV":347972350.0},"TTKD ô tô Miền Nam":{"MIC":20288999.999999996,"PJICO":41710450.0,"PVI":16875800.0,"TASCO":757369009.0909091,"DBV":702634436.3636364}},"branches":[{"code":"VN0010478","name":"TTKD ô tô Miền Bắc","vung":"Hub Bắc","grp":"HUB","v":{"PVI":26.8,"TASCO":3692.9,"DBV":1525.2,"MIC":295.5,"PJICO":15.5},"g":{"PVI":4,"TASCO":524,"DBV":224,"MIC":41,"PJICO":2},"t":5555.9,"t8":5099.3,"s30":6173.3,"dom":"TASCO","ds":0.665,"mic8s":0.158,"micdrop":0.579,"tier":["HUB"]},{"code":"VN0010479","name":"TTKD ô tô Miền Nam","vung":"Hub Nam","grp":"HUB","v":{"PVI":16.9,"TASCO":2867.2,"DBV":2228.9,"MIC":41.5,"PJICO":146.4},"g":{"PVI":3,"TASCO":403,"DBV":320,"MIC":6,"PJICO":20},"t":5300.9,"t8":5269.6,"s30":5889.9,"dom":"TASCO","ds":0.541,"mic8s":0.015,"micdrop":0.407,"tier":["HUB"]},{"code":"VN0010121","name":"Bà Chiểu","vung":"Vùng 08B","grp":"C","v":{"PVI":0.0,"TASCO":212.6,"DBV":420.5,"MIC":0.0,"PJICO":213.9},"g":{"PVI":0,"TASCO":32,"DBV":50,"MIC":0,"PJICO":31},"t":847.0,"t8":537.5,"s30":941.1,"dom":"DBV","ds":0.496,"mic8s":0.0,"micdrop":0,"tier":["C"]},{"code":"VN0010170","name":"Kiên Giang","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":65.4,"DBV":15.0,"MIC":113.4,"PJICO":443.5},"g":{"PVI":0,"TASCO":9,"DBV":2,"MIC":16,"PJICO":57},"t":637.3,"t8":612.9,"s30":708.1,"dom":"PJICO","ds":0.696,"mic8s":0.128,"micdrop":-0.661,"tier":[]},{"code":"VN0010102","name":"Hồ Chí Minh","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":34.6,"DBV":573.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":5,"DBV":68,"MIC":0,"PJICO":0},"t":607.7,"t8":870.4,"s30":675.2,"dom":"DBV","ds":0.943,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010156","name":"An Giang","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":22.2,"DBV":431.8,"MIC":76.3,"PJICO":22.0},"g":{"PVI":0,"TASCO":4,"DBV":60,"MIC":11,"PJICO":3},"t":552.4,"t8":445.6,"s30":613.8,"dom":"DBV","ds":0.782,"mic8s":0.144,"micdrop":-0.367,"tier":[]},{"code":"VN0010155","name":"Đồng Nai","vung":"Vùng 11","grp":"A","v":{"PVI":7.7,"TASCO":24.3,"DBV":0.0,"MIC":18.6,"PJICO":432.0},"g":{"PVI":1,"TASCO":4,"DBV":0,"MIC":3,"PJICO":67},"t":482.5,"t8":401.0,"s30":536.1,"dom":"PJICO","ds":0.895,"mic8s":0.0,"micdrop":0,"tier":["A"]},{"code":"VN0010353","name":"Tiền Giang","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":54.8,"DBV":78.8,"MIC":304.1,"PJICO":6.3},"g":{"PVI":0,"TASCO":7,"DBV":10,"MIC":43,"PJICO":1},"t":444.0,"t8":488.2,"s30":493.3,"dom":"MIC","ds":0.685,"mic8s":0.682,"micdrop":-0.049,"tier":[]},{"code":"VN0010261","name":"Bình Dương","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":5.9,"DBV":409.2,"MIC":7.1,"PJICO":5.4},"g":{"PVI":0,"TASCO":1,"DBV":57,"MIC":1,"PJICO":1},"t":427.6,"t8":561.4,"s30":475.1,"dom":"DBV","ds":0.957,"mic8s":0.059,"micdrop":0.754,"tier":[]},{"code":"VN0010301","name":"Gia Lai","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":406.4,"DBV":7.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":53,"DBV":1,"MIC":0,"PJICO":0},"t":414.1,"t8":321.4,"s30":460.1,"dom":"TASCO","ds":0.981,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010361","name":"Hưng Yên","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":81.9,"MIC":234.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":9,"MIC":30,"PJICO":0},"t":316.3,"t8":274.1,"s30":351.4,"dom":"MIC","ds":0.741,"mic8s":0.491,"micdrop":-0.998,"tier":[]},{"code":"VN0010255","name":"Nơ Trang Long","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":261.6,"DBV":50.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":47,"DBV":11,"MIC":0,"PJICO":0},"t":311.6,"t8":405.6,"s30":346.2,"dom":"TASCO","ds":0.84,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010201","name":"Hàng Xanh","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":265.3,"DBV":45.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":39,"DBV":6,"MIC":0,"PJICO":0},"t":310.3,"t8":212.8,"s30":344.7,"dom":"TASCO","ds":0.855,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010225","name":"Thái Nguyên","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":309.0,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":50,"DBV":0,"MIC":0,"PJICO":0},"t":309.0,"t8":236.0,"s30":343.3,"dom":"TASCO","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010157","name":"Long An","vung":"Vùng 10","grp":"C","v":{"PVI":0.0,"TASCO":180.9,"DBV":27.6,"MIC":99.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":26,"DBV":4,"MIC":10,"PJICO":0},"t":308.2,"t8":284.3,"s30":342.4,"dom":"TASCO","ds":0.587,"mic8s":0.255,"micdrop":-0.579,"tier":["C"]},{"code":"VN0010308","name":"Thành Nam","vung":"Vùng 06B","grp":"A","v":{"PVI":19.1,"TASCO":4.9,"DBV":0.0,"MIC":0.0,"PJICO":268.1},"g":{"PVI":2,"TASCO":1,"DBV":0,"MIC":0,"PJICO":36},"t":292.1,"t8":185.8,"s30":324.5,"dom":"PJICO","ds":0.918,"mic8s":0.0,"micdrop":0,"tier":["A"]},{"code":"VN0010229","name":"Bình Thuận","vung":"Vùng 11","grp":"C","v":{"PVI":0.0,"TASCO":15.1,"DBV":96.7,"MIC":13.6,"PJICO":164.8},"g":{"PVI":0,"TASCO":3,"DBV":15,"MIC":2,"PJICO":22},"t":290.2,"t8":352.0,"s30":322.4,"dom":"PJICO","ds":0.568,"mic8s":0.047,"micdrop":0.054,"tier":["C"]},{"code":"VN0010129","name":"Lê Hồng Phong","vung":"Vùng 06","grp":"A","v":{"PVI":18.2,"TASCO":237.9,"DBV":26.9,"MIC":0.0,"PJICO":5.2},"g":{"PVI":3,"TASCO":36,"DBV":4,"MIC":0,"PJICO":1},"t":288.1,"t8":313.4,"s30":320.2,"dom":"TASCO","ds":0.826,"mic8s":0.022,"micdrop":1.0,"tier":["A"]},{"code":"VN0010147","name":"Nha Trang","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":211.1,"DBV":60.9,"MIC":15.5,"PJICO":0.0},"g":{"PVI":0,"TASCO":31,"DBV":8,"MIC":3,"PJICO":0},"t":287.5,"t8":191.7,"s30":319.4,"dom":"TASCO","ds":0.734,"mic8s":0.064,"micdrop":-0.459,"tier":[]},{"code":"VN0010362","name":"Ninh Bình","vung":"Vùng 06B","grp":"A","v":{"PVI":28.3,"TASCO":88.1,"DBV":68.1,"MIC":72.1,"PJICO":28.3},"g":{"PVI":4,"TASCO":14,"DBV":12,"MIC":10,"PJICO":4},"t":284.9,"t8":239.5,"s30":316.6,"dom":"TASCO","ds":0.309,"mic8s":0.575,"micdrop":0.399,"tier":["A","B","C"]},{"code":"VN0010107","name":"Cần Thơ","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":275.7,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":44,"DBV":0,"MIC":0,"PJICO":0},"t":275.7,"t8":275.8,"s30":306.3,"dom":"TASCO","ds":1.0,"mic8s":0.055,"micdrop":1.0,"tier":[]},{"code":"VN0010377","name":"TT thế chấp V8","vung":"Vùng 08","grp":"C","v":{"PVI":0.0,"TASCO":108.3,"DBV":124.4,"MIC":0.0,"PJICO":39.1},"g":{"PVI":0,"TASCO":17,"DBV":14,"MIC":0,"PJICO":6},"t":271.9,"t8":341.4,"s30":302.1,"dom":"DBV","ds":0.458,"mic8s":0.0,"micdrop":0,"tier":["C"]},{"code":"VN0010445","name":"TT thế chấp V9.2","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":210.6,"DBV":33.7,"MIC":5.8,"PJICO":15.9},"g":{"PVI":0,"TASCO":29,"DBV":5,"MIC":1,"PJICO":1},"t":266.0,"t8":163.1,"s30":295.5,"dom":"TASCO","ds":0.792,"mic8s":0.134,"micdrop":0.695,"tier":[]},{"code":"VN0010420","name":"TTTC Vùng 10","vung":"Vùng 10","grp":"B","v":{"PVI":0.0,"TASCO":259.4,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":42,"DBV":0,"MIC":0,"PJICO":0},"t":259.4,"t8":214.6,"s30":288.2,"dom":"TASCO","ds":1.0,"mic8s":0.24,"micdrop":1.0,"tier":["B"]},{"code":"VN0010154","name":"Thanh Hóa","vung":"Vùng 05","grp":"C","v":{"PVI":0.0,"TASCO":144.9,"DBV":106.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":18,"DBV":15,"MIC":0,"PJICO":0},"t":250.8,"t8":188.4,"s30":278.7,"dom":"TASCO","ds":0.578,"mic8s":0.0,"micdrop":0,"tier":["C"]},{"code":"VN0010226","name":"Đồng Tháp","vung":"Vùng 10","grp":"C","v":{"PVI":0.0,"TASCO":143.4,"DBV":19.5,"MIC":68.0,"PJICO":11.4},"g":{"PVI":0,"TASCO":21,"DBV":2,"MIC":10,"PJICO":2},"t":242.3,"t8":282.5,"s30":269.2,"dom":"TASCO","ds":0.592,"mic8s":0.15,"micdrop":-0.841,"tier":["C"]},{"code":"VN0010356","name":"Dak lak","vung":"Vùng 07","grp":"A","v":{"PVI":50.6,"TASCO":100.3,"DBV":70.2,"MIC":0.0,"PJICO":0.0},"g":{"PVI":8,"TASCO":14,"DBV":12,"MIC":0,"PJICO":0},"t":221.1,"t8":271.7,"s30":245.7,"dom":"TASCO","ds":0.454,"mic8s":0.079,"micdrop":1.0,"tier":["A","C"]},{"code":"VN0010385","name":"Bến Tre","vung":"Vùng 10","grp":"B","v":{"PVI":0.0,"TASCO":177.5,"DBV":0.0,"MIC":27.8,"PJICO":0.0},"g":{"PVI":0,"TASCO":28,"DBV":0,"MIC":4,"PJICO":0},"t":205.3,"t8":238.6,"s30":228.1,"dom":"TASCO","ds":0.865,"mic8s":0.458,"micdrop":0.708,"tier":["B"]},{"code":"VN0010359","name":"Cà Mau","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":195.6,"MIC":0.0,"PJICO":6.1},"g":{"PVI":0,"TASCO":0,"DBV":30,"MIC":0,"PJICO":1},"t":201.7,"t8":335.4,"s30":224.1,"dom":"DBV","ds":0.97,"mic8s":0.018,"micdrop":1.0,"tier":[]},{"code":"VN0010379","name":"TT thế chấp V2","vung":"Vùng 02","grp":"C","v":{"PVI":0.0,"TASCO":87.8,"DBV":70.8,"MIC":39.5,"PJICO":0.0},"g":{"PVI":0,"TASCO":12,"DBV":10,"MIC":7,"PJICO":0},"t":198.1,"t8":328.0,"s30":220.1,"dom":"TASCO","ds":0.443,"mic8s":0.248,"micdrop":0.442,"tier":["C"]},{"code":"VN0010191","name":"Phú Thọ","vung":"Vùng 04","grp":"A","v":{"PVI":5.8,"TASCO":0.0,"DBV":86.2,"MIC":93.4,"PJICO":0.0},"g":{"PVI":1,"TASCO":0,"DBV":13,"MIC":15,"PJICO":0},"t":185.4,"t8":217.1,"s30":206.0,"dom":"MIC","ds":0.504,"mic8s":0.561,"micdrop":0.12,"tier":["A","C"]},{"code":"VN0010103","name":"Hải Phòng","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":69.4,"DBV":0.0,"MIC":112.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":9,"DBV":0,"MIC":18,"PJICO":0},"t":181.8,"t8":135.6,"s30":202.0,"dom":"MIC","ds":0.618,"mic8s":0.387,"micdrop":-1.458,"tier":[]},{"code":"VN0010158","name":"Nam Định","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":22.2,"DBV":5.8,"MIC":0.0,"PJICO":151.1},"g":{"PVI":0,"TASCO":4,"DBV":1,"MIC":0,"PJICO":23},"t":179.2,"t8":218.5,"s30":199.1,"dom":"PJICO","ds":0.843,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010278","name":"Lê Lợi","vung":"Vùng 04","grp":"B","v":{"PVI":0.0,"TASCO":0.0,"DBV":117.6,"MIC":61.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":14,"MIC":10,"PJICO":0},"t":178.9,"t8":144.8,"s30":198.8,"dom":"DBV","ds":0.657,"mic8s":0.661,"micdrop":0.263,"tier":["B"]},{"code":"VN0010363","name":"Phú Quốc","vung":"Vùng 10","grp":"B","v":{"PVI":0.0,"TASCO":0.0,"DBV":90.5,"MIC":17.6,"PJICO":68.0},"g":{"PVI":0,"TASCO":0,"DBV":11,"MIC":2,"PJICO":9},"t":176.1,"t8":165.8,"s30":195.7,"dom":"DBV","ds":0.514,"mic8s":0.285,"micdrop":0.573,"tier":["B"]},{"code":"VN0010350","name":"Đà Lạt","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":35.5,"DBV":109.6,"MIC":12.2,"PJICO":15.8},"g":{"PVI":0,"TASCO":5,"DBV":18,"MIC":2,"PJICO":2},"t":173.0,"t8":214.4,"s30":192.2,"dom":"DBV","ds":0.634,"mic8s":0.018,"micdrop":-2.592,"tier":[]},{"code":"VN0010220","name":"Hòa Bình","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":155.5,"DBV":0.0,"MIC":6.0,"PJICO":5.3},"g":{"PVI":0,"TASCO":18,"DBV":0,"MIC":1,"PJICO":1},"t":166.9,"t8":95.9,"s30":185.4,"dom":"TASCO","ds":0.932,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010130","name":"Lê Chân","vung":"Vùng 06","grp":"A","v":{"PVI":11.5,"TASCO":77.2,"DBV":5.2,"MIC":66.0,"PJICO":6.6},"g":{"PVI":2,"TASCO":13,"DBV":1,"MIC":10,"PJICO":1},"t":166.5,"t8":255.1,"s30":185.0,"dom":"TASCO","ds":0.464,"mic8s":0.245,"micdrop":-0.214,"tier":["A"]},{"code":"VN0010206","name":"Bình Định","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":105.7,"DBV":4.1,"MIC":0.0,"PJICO":52.7},"g":{"PVI":0,"TASCO":11,"DBV":1,"MIC":0,"PJICO":7},"t":162.5,"t8":261.5,"s30":180.5,"dom":"TASCO","ds":0.651,"mic8s":0.025,"micdrop":1.0,"tier":[]},{"code":"VN0010383","name":"Bà Rịa","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":141.2,"DBV":20.5,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":18,"DBV":3,"MIC":0,"PJICO":0},"t":161.6,"t8":295.6,"s30":179.6,"dom":"TASCO","ds":0.874,"mic8s":0.087,"micdrop":1.0,"tier":[]},{"code":"VN0010283","name":"Ninh Kiều","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":157.5,"DBV":0.0,"MIC":2.9,"PJICO":0.0},"g":{"PVI":0,"TASCO":27,"DBV":0,"MIC":1,"PJICO":0},"t":160.4,"t8":138.0,"s30":178.2,"dom":"TASCO","ds":0.982,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010198","name":"Nguyễn Trãi","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":111.4,"DBV":43.5,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":20,"DBV":8,"MIC":0,"PJICO":0},"t":154.9,"t8":184.4,"s30":172.1,"dom":"TASCO","ds":0.719,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010417","name":"TT Thế chấp V1B","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":39.7,"DBV":112.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":6,"DBV":13,"MIC":0,"PJICO":0},"t":152.0,"t8":330.7,"s30":168.9,"dom":"DBV","ds":0.739,"mic8s":0.09,"micdrop":1.0,"tier":[]},{"code":"VN0010401","name":"Bạc Liêu","vung":"Vùng 10","grp":"A","v":{"PVI":18.6,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":130.8},"g":{"PVI":3,"TASCO":0,"DBV":0,"MIC":0,"PJICO":18},"t":149.4,"t8":114.1,"s30":166.0,"dom":"PJICO","ds":0.876,"mic8s":0.0,"micdrop":0,"tier":["A"]},{"code":"VN0010288","name":"Đông Hương","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":135.8,"DBV":11.8,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":24,"DBV":2,"MIC":0,"PJICO":0},"t":147.6,"t8":134.5,"s30":164.0,"dom":"TASCO","ds":0.92,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010162","name":"Nam Sài Gòn","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":108.9,"DBV":31.1,"MIC":5.6,"PJICO":0.0},"g":{"PVI":0,"TASCO":14,"DBV":3,"MIC":1,"PJICO":0},"t":145.7,"t8":123.7,"s30":161.9,"dom":"TASCO","ds":0.748,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010137","name":"Đống Đa","vung":"Vùng 07","grp":"A","v":{"PVI":3.9,"TASCO":94.9,"DBV":0.0,"MIC":38.9,"PJICO":7.8},"g":{"PVI":1,"TASCO":16,"DBV":0,"MIC":5,"PJICO":1},"t":145.5,"t8":155.5,"s30":161.6,"dom":"TASCO","ds":0.652,"mic8s":0.596,"micdrop":0.518,"tier":["A","B"]},{"code":"VN0010378","name":"TT thế chấp V9","vung":"Vùng 09","grp":"","v":{"PVI":0.0,"TASCO":33.2,"DBV":100.9,"MIC":0.0,"PJICO":5.7},"g":{"PVI":0,"TASCO":4,"DBV":15,"MIC":0,"PJICO":1},"t":139.8,"t8":242.0,"s30":155.3,"dom":"DBV","ds":0.722,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010131","name":"Vĩnh Phúc","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":117.0,"DBV":19.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":14,"DBV":1,"MIC":0,"PJICO":0},"t":136.0,"t8":179.8,"s30":151.2,"dom":"TASCO","ds":0.86,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010159","name":"Hải Dương","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":59.9,"DBV":70.0,"MIC":5.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":9,"DBV":10,"MIC":1,"PJICO":0},"t":135.3,"t8":253.1,"s30":150.4,"dom":"DBV","ds":0.517,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010351","name":"Bến Thành","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":61.4,"MIC":40.4,"PJICO":33.2},"g":{"PVI":0,"TASCO":0,"DBV":10,"MIC":6,"PJICO":5},"t":135.0,"t8":163.4,"s30":150.0,"dom":"DBV","ds":0.455,"mic8s":0.214,"micdrop":-0.329,"tier":[]},{"code":"VN0010358","name":"Hà Nam","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":89.5,"DBV":11.6,"MIC":33.8,"PJICO":0.0},"g":{"PVI":0,"TASCO":10,"DBV":2,"MIC":3,"PJICO":0},"t":134.9,"t8":129.7,"s30":149.9,"dom":"TASCO","ds":0.664,"mic8s":0.09,"micdrop":-2.317,"tier":[]},{"code":"VN0010319","name":"Kỳ Bá","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":108.3,"DBV":26.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":16,"DBV":4,"MIC":0,"PJICO":0},"t":134.6,"t8":177.2,"s30":149.6,"dom":"TASCO","ds":0.805,"mic8s":0.074,"micdrop":1.0,"tier":[]},{"code":"VN0010185","name":"Phú Mỹ Hưng","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":18.4,"DBV":109.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":4,"DBV":14,"MIC":0,"PJICO":0},"t":127.4,"t8":131.6,"s30":141.5,"dom":"DBV","ds":0.856,"mic8s":0.159,"micdrop":1.0,"tier":[]},{"code":"VN0010133","name":"Sở Giao dịch","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":20.0,"DBV":104.4,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":3,"MIC":0,"PJICO":0},"t":124.4,"t8":28.9,"s30":138.2,"dom":"DBV","ds":0.839,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010364","name":"Tây Ninh","vung":"Vùng 10","grp":"B","v":{"PVI":0.0,"TASCO":108.1,"DBV":0.0,"MIC":6.3,"PJICO":8.2},"g":{"PVI":0,"TASCO":20,"DBV":0,"MIC":1,"PJICO":1},"t":122.6,"t8":225.5,"s30":136.2,"dom":"TASCO","ds":0.882,"mic8s":0.394,"micdrop":0.919,"tier":["B"]},{"code":"VN0010262","name":"Vũng Tàu","vung":"Vùng 11","grp":"A","v":{"PVI":4.9,"TASCO":5.3,"DBV":72.1,"MIC":3.9,"PJICO":25.4},"g":{"PVI":1,"TASCO":1,"DBV":12,"MIC":1,"PJICO":4},"t":111.6,"t8":106.9,"s30":124.0,"dom":"DBV","ds":0.646,"mic8s":0.0,"micdrop":0,"tier":["A"]},{"code":"VN0010398","name":"Sóc Trăng","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":111.1,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":17,"MIC":0,"PJICO":0},"t":111.1,"t8":104.3,"s30":123.4,"dom":"DBV","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010145","name":"Phúc Yên","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":103.2,"DBV":0.0,"MIC":7.6,"PJICO":0.0},"g":{"PVI":0,"TASCO":16,"DBV":0,"MIC":1,"PJICO":0},"t":110.8,"t8":152.2,"s30":123.1,"dom":"TASCO","ds":0.931,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010318","name":"Châu Đốc","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":29.0,"DBV":72.7,"MIC":6.9,"PJICO":0.0},"g":{"PVI":0,"TASCO":7,"DBV":19,"MIC":1,"PJICO":0},"t":108.5,"t8":106.6,"s30":120.6,"dom":"DBV","ds":0.67,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010384","name":"Sa Đéc","vung":"Vùng 10","grp":"B","v":{"PVI":0.0,"TASCO":98.7,"DBV":6.9,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":15,"DBV":1,"MIC":0,"PJICO":0},"t":105.5,"t8":199.7,"s30":117.3,"dom":"TASCO","ds":0.935,"mic8s":0.232,"micdrop":1.0,"tier":["B"]},{"code":"VN0010104","name":"Đà Nẵng","vung":"Vùng 07","grp":"A","v":{"PVI":30.1,"TASCO":0.0,"DBV":27.9,"MIC":27.1,"PJICO":18.4},"g":{"PVI":4,"TASCO":0,"DBV":4,"MIC":4,"PJICO":3},"t":103.4,"t8":134.6,"s30":114.9,"dom":"PVI","ds":0.291,"mic8s":0.795,"micdrop":0.709,"tier":["A","B"]},{"code":"VN0010253","name":"Nguyễn Thái Học","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":102.3,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":15,"DBV":0,"MIC":0,"PJICO":0},"t":102.3,"t8":164.5,"s30":113.6,"dom":"TASCO","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010360","name":"Lạng Sơn","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":32.6,"MIC":0.0,"PJICO":69.4},"g":{"PVI":0,"TASCO":0,"DBV":6,"MIC":0,"PJICO":11},"t":102.0,"t8":113.7,"s30":113.3,"dom":"PJICO","ds":0.68,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010402","name":"Hồng Hà","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":7.1,"DBV":0.0,"MIC":93.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":13,"PJICO":0},"t":100.8,"t8":87.8,"s30":111.9,"dom":"MIC","ds":0.93,"mic8s":1.0,"micdrop":-0.225,"tier":[]},{"code":"VN0010239","name":"Núi Thành","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":48.4,"MIC":51.8,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":8,"MIC":7,"PJICO":0},"t":100.2,"t8":165.2,"s30":111.3,"dom":"MIC","ds":0.517,"mic8s":0.277,"micdrop":-0.301,"tier":[]},{"code":"VN0010435","name":"VPBANK SO GIAO DICH 2","vung":"Vùng 08","grp":"A","v":{"PVI":16.6,"TASCO":0.0,"DBV":0.0,"MIC":81.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":97.6,"t8":75.0,"s30":108.5,"dom":"MIC","ds":0.83,"mic8s":0.936,"micdrop":-0.325,"tier":["A","B"]},{"code":"VN0010282","name":"Lê Thanh Nghị","vung":"Vùng 06","grp":"B","v":{"PVI":0.0,"TASCO":22.0,"DBV":6.2,"MIC":68.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":1,"MIC":8,"PJICO":0},"t":96.9,"t8":56.3,"s30":107.6,"dom":"MIC","ds":0.709,"mic8s":0.876,"micdrop":-0.6,"tier":["B"]},{"code":"VN0010221","name":"Thái Bình","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":96.4,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":15,"DBV":0,"MIC":0,"PJICO":0},"t":96.4,"t8":139.6,"s30":107.1,"dom":"TASCO","ds":1.0,"mic8s":0.046,"micdrop":1.0,"tier":[]},{"code":"VN0010279","name":"Móng Cái","vung":"Vùng 06","grp":"B","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":74.4,"PJICO":21.8},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":10,"PJICO":2},"t":96.2,"t8":115.9,"s30":106.9,"dom":"MIC","ds":0.773,"mic8s":1.0,"micdrop":0.263,"tier":["B"]},{"code":"VN0010386","name":"Phú Yên","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":62.4,"DBV":0.0,"MIC":31.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":9,"DBV":0,"MIC":4,"PJICO":0},"t":94.1,"t8":87.5,"s30":104.5,"dom":"TASCO","ds":0.663,"mic8s":0.262,"micdrop":-0.589,"tier":[]},{"code":"VN0010374","name":"TT thế chấp V1","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":81.0,"DBV":11.8,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":10,"DBV":2,"MIC":0,"PJICO":0},"t":92.9,"t8":240.5,"s30":103.2,"dom":"TASCO","ds":0.872,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010409","name":"Thanh Trì","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":92.5,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":14,"PJICO":0},"t":92.5,"t8":260.1,"s30":102.8,"dom":"MIC","ds":1.0,"mic8s":1.0,"micdrop":0.592,"tier":[]},{"code":"VN0010390","name":"Gia Lâm","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":92.5,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":8,"DBV":0,"MIC":0,"PJICO":0},"t":92.5,"t8":76.0,"s30":102.7,"dom":"TASCO","ds":1.0,"mic8s":0.065,"micdrop":1.0,"tier":[]},{"code":"VN0010177","name":"Quảng Bình","vung":"Vùng 07","grp":"A","v":{"PVI":5.1,"TASCO":5.4,"DBV":60.1,"MIC":20.9,"PJICO":0.0},"g":{"PVI":1,"TASCO":1,"DBV":10,"MIC":4,"PJICO":0},"t":91.5,"t8":124.5,"s30":101.7,"dom":"DBV","ds":0.657,"mic8s":0.329,"micdrop":0.415,"tier":["A","B"]},{"code":"VN0010223","name":"Hà Tĩnh","vung":"Vùng 05","grp":"","v":{"PVI":6.3,"TASCO":83.1,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":11,"DBV":0,"MIC":0,"PJICO":0},"t":89.3,"t8":104.9,"s30":99.3,"dom":"TASCO","ds":0.93,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010341","name":"Quận 2","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":88.7,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":12,"DBV":0,"MIC":0,"PJICO":0},"t":88.7,"t8":55.4,"s30":98.5,"dom":"TASCO","ds":1.0,"mic8s":0.184,"micdrop":1.0,"tier":[]},{"code":"VN0010447","name":"Bãi Cháy","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":33.1,"DBV":10.3,"MIC":44.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":4,"DBV":1,"MIC":6,"PJICO":0},"t":87.3,"t8":115.6,"s30":97.1,"dom":"MIC","ds":0.504,"mic8s":0.588,"micdrop":0.257,"tier":[]},{"code":"VN0010343","name":"Văn Thánh","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":72.7,"DBV":5.0,"MIC":8.3,"PJICO":0.0},"g":{"PVI":0,"TASCO":10,"DBV":1,"MIC":1,"PJICO":0},"t":86.0,"t8":81.3,"s30":95.5,"dom":"TASCO","ds":0.845,"mic8s":0.102,"micdrop":-0.148,"tier":[]},{"code":"VN0010451","name":"Đăk Nông","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":17.4,"DBV":67.8,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":7,"MIC":0,"PJICO":0},"t":85.1,"t8":49.6,"s30":94.6,"dom":"DBV","ds":0.796,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010195","name":"Nguyễn Tri Phương","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":57.4,"DBV":16.7,"MIC":8.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":8,"DBV":2,"MIC":1,"PJICO":0},"t":82.7,"t8":96.2,"s30":91.9,"dom":"TASCO","ds":0.694,"mic8s":0.071,"micdrop":-0.469,"tier":[]},{"code":"VN0010376","name":"TT thế chấp V3","vung":"Vùng 03","grp":"","v":{"PVI":0.0,"TASCO":15.9,"DBV":56.6,"MIC":9.9,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":6,"MIC":2,"PJICO":0},"t":82.4,"t8":71.0,"s30":91.5,"dom":"DBV","ds":0.687,"mic8s":0.058,"micdrop":-1.772,"tier":[]},{"code":"VN0010105","name":"Huế","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":81.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":11,"PJICO":0},"t":81.7,"t8":149.5,"s30":90.7,"dom":"MIC","ds":1.0,"mic8s":0.91,"micdrop":0.311,"tier":[]},{"code":"VN0010397","name":"Quảng Ngãi","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":81.2,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":14,"MIC":0,"PJICO":0},"t":81.2,"t8":37.7,"s30":90.2,"dom":"DBV","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010302","name":"Phương Mai","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":81.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":2},"t":81.0,"t8":9.2,"s30":90.0,"dom":"PJICO","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010349","name":"Thuận An","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":78.8,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":8,"MIC":0,"PJICO":0},"t":78.8,"t8":36.4,"s30":87.5,"dom":"DBV","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010179","name":"Xương Giang","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":78.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":12,"MIC":0,"PJICO":0},"t":78.7,"t8":139.0,"s30":87.5,"dom":"DBV","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010284","name":"Gang Thép","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":74.6,"DBV":0.0,"MIC":3.9,"PJICO":0.0},"g":{"PVI":0,"TASCO":12,"DBV":0,"MIC":1,"PJICO":0},"t":78.5,"t8":137.3,"s30":87.2,"dom":"TASCO","ds":0.951,"mic8s":0.052,"micdrop":0.369,"tier":[]},{"code":"VN0010407","name":"TT thế chấp Thảo Điền","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":50.4,"MIC":28.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":7,"MIC":6,"PJICO":0},"t":78.4,"t8":172.7,"s30":87.1,"dom":"DBV","ds":0.643,"mic8s":0.356,"micdrop":0.476,"tier":[]},{"code":"VN0010418","name":"Trung tâm thế chấp R5","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":77.8,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":7,"PJICO":0},"t":77.8,"t8":109.6,"s30":86.5,"dom":"MIC","ds":1.0,"mic8s":0.896,"micdrop":0.09,"tier":[]},{"code":"VN0010259","name":"Phú Hội","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":36.8,"DBV":0.0,"MIC":6.7,"PJICO":34.0},"g":{"PVI":0,"TASCO":6,"DBV":0,"MIC":1,"PJICO":5},"t":77.5,"t8":67.7,"s30":86.2,"dom":"TASCO","ds":0.475,"mic8s":0.701,"micdrop":0.838,"tier":[]},{"code":"VN0010296","name":"Quảng Nam","vung":"Vùng 07","grp":"","v":{"PVI":6.1,"TASCO":0.0,"DBV":70.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":0,"DBV":11,"MIC":0,"PJICO":0},"t":76.8,"t8":74.3,"s30":85.4,"dom":"DBV","ds":0.92,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010410","name":"Chí Linh","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":62.3,"DBV":13.5,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":8,"DBV":2,"MIC":0,"PJICO":0},"t":75.9,"t8":90.4,"s30":84.3,"dom":"TASCO","ds":0.821,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010392","name":"Điện Biên","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":45.2,"DBV":19.0,"MIC":11.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":7,"DBV":3,"MIC":2,"PJICO":0},"t":75.2,"t8":136.2,"s30":83.6,"dom":"TASCO","ds":0.601,"mic8s":0.14,"micdrop":0.339,"tier":[]},{"code":"VN0010153","name":"Nghệ An","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":69.1,"DBV":5.5,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":11,"DBV":1,"MIC":0,"PJICO":0},"t":74.7,"t8":147.6,"s30":83.0,"dom":"TASCO","ds":0.925,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010140","name":"Đông Ba","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":41.7,"DBV":6.0,"MIC":25.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":6,"DBV":1,"MIC":4,"PJICO":0},"t":73.4,"t8":51.0,"s30":81.6,"dom":"TASCO","ds":0.568,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010285","name":"Bến Thủy","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":70.1,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":9,"DBV":0,"MIC":0,"PJICO":0},"t":70.1,"t8":52.9,"s30":77.9,"dom":"TASCO","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010212","name":"Đò Quan","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":69.9},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":10},"t":69.9,"t8":96.5,"s30":77.7,"dom":"PJICO","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010275","name":"Bố Trạch","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":18.5,"DBV":46.0,"MIC":4.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":7,"MIC":1,"PJICO":0},"t":68.9,"t8":24.3,"s30":76.5,"dom":"DBV","ds":0.668,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010419","name":"Trung tâm thế chấp R7","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":14.1,"DBV":12.7,"MIC":36.5,"PJICO":5.5},"g":{"PVI":0,"TASCO":2,"DBV":2,"MIC":6,"PJICO":1},"t":68.8,"t8":50.6,"s30":76.4,"dom":"MIC","ds":0.531,"mic8s":0.556,"micdrop":-0.491,"tier":[]},{"code":"VN0010281","name":"Vĩnh Yên","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":62.1,"DBV":0.0,"MIC":6.3,"PJICO":0.0},"g":{"PVI":0,"TASCO":8,"DBV":0,"MIC":1,"PJICO":0},"t":68.3,"t8":72.7,"s30":75.9,"dom":"TASCO","ds":0.909,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010132","name":"Bắc Giang","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":18.5,"MIC":48.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":3,"MIC":8,"PJICO":0},"t":66.5,"t8":62.2,"s30":73.9,"dom":"MIC","ds":0.722,"mic8s":0.352,"micdrop":-1.516,"tier":[]},{"code":"VN0010161","name":"Lý Tự Trọng","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":65.8,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":11,"DBV":0,"MIC":0,"PJICO":0},"t":65.8,"t8":120.2,"s30":73.1,"dom":"TASCO","ds":1.0,"mic8s":0.151,"micdrop":1.0,"tier":[]},{"code":"VN0010457","name":"Bảo Lộc","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":65.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":7,"MIC":0,"PJICO":0},"t":65.0,"t8":88.2,"s30":72.2,"dom":"DBV","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010366","name":"Bình Phước","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":18.3,"MIC":8.5,"PJICO":35.6},"g":{"PVI":0,"TASCO":0,"DBV":3,"MIC":1,"PJICO":6},"t":62.4,"t8":63.7,"s30":69.4,"dom":"PJICO","ds":0.57,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010292","name":"Thành Sen","vung":"Vùng 05","grp":"","v":{"PVI":12.4,"TASCO":41.0,"DBV":8.9,"MIC":0.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":6,"DBV":1,"MIC":0,"PJICO":0},"t":62.3,"t8":67.6,"s30":69.2,"dom":"TASCO","ds":0.658,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010298","name":"Đông Hà Nội","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":60.9,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":7,"MIC":0,"PJICO":0},"t":60.9,"t8":109.8,"s30":67.7,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010174","name":"Mai Thúc Loan","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":60.8,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":9,"MIC":0,"PJICO":0},"t":60.8,"t8":32.0,"s30":67.6,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010224","name":"Quảng Trị","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":53.6,"MIC":6.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":8,"MIC":1,"PJICO":0},"t":59.6,"t8":93.5,"s30":66.2,"dom":"DBV","ds":0.899,"mic8s":0.303,"micdrop":0.757,"tier":[]},{"code":"VN0010237","name":"Nguyễn Lương Bằng","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":10.3,"DBV":48.6,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":8,"MIC":0,"PJICO":0},"t":58.9,"t8":81.5,"s30":65.5,"dom":"DBV","ds":0.825,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010238","name":"Hùng Vương","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":38.2,"MIC":20.2,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":6,"MIC":3,"PJICO":0},"t":58.4,"t8":104.4,"s30":64.8,"dom":"DBV","ds":0.655,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010193","name":"Trung Kính","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":47.8,"MIC":10.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":6,"MIC":2,"PJICO":0},"t":58.3,"t8":72.5,"s30":64.8,"dom":"DBV","ds":0.82,"mic8s":0.77,"micdrop":0.786,"tier":[]},{"code":"VN0010295","name":"Trần Nguyên Hãn","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":21.2,"DBV":0.0,"MIC":36.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":0,"MIC":1,"PJICO":0},"t":58.0,"t8":82.6,"s30":64.4,"dom":"MIC","ds":0.633,"mic8s":0.218,"micdrop":-1.341,"tier":[]},{"code":"VN0010291","name":"Ý Yên","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":8.7,"MIC":0.0,"PJICO":45.4},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":6},"t":54.1,"t8":49.9,"s30":60.1,"dom":"PJICO","ds":0.839,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010222","name":"Bắc Ninh","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":51.2,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":8,"PJICO":0},"t":51.2,"t8":94.9,"s30":56.9,"dom":"MIC","ds":1.0,"mic8s":0.931,"micdrop":0.334,"tier":[]},{"code":"VN0010365","name":"Lào Cai","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":50.9,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":8,"MIC":0,"PJICO":0},"t":50.9,"t8":104.2,"s30":56.5,"dom":"DBV","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010306","name":"Đồng Hới","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":50.6,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":8,"MIC":0,"PJICO":0},"t":50.6,"t8":139.5,"s30":56.2,"dom":"DBV","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010456","name":"Hòa Thành","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":40.3,"DBV":0.0,"MIC":0.0,"PJICO":9.9},"g":{"PVI":0,"TASCO":4,"DBV":0,"MIC":0,"PJICO":2},"t":50.2,"t8":21.5,"s30":55.8,"dom":"TASCO","ds":0.802,"mic8s":0.232,"micdrop":1.0,"tier":[]},{"code":"VN0010421","name":"Trung tâm thế chấp R11","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":6.1,"DBV":0.0,"MIC":0.0,"PJICO":43.9},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":0,"PJICO":5},"t":50.0,"t8":14.8,"s30":55.6,"dom":"PJICO","ds":0.878,"mic8s":0.998,"micdrop":1.0,"tier":[]},{"code":"VN0010127","name":"Hải Vân","vung":"Vùng 07","grp":"","v":{"PVI":5.6,"TASCO":7.4,"DBV":0.0,"MIC":36.6,"PJICO":0.0},"g":{"PVI":1,"TASCO":1,"DBV":0,"MIC":5,"PJICO":0},"t":49.6,"t8":125.5,"s30":55.2,"dom":"MIC","ds":0.737,"mic8s":0.731,"micdrop":0.542,"tier":[]},{"code":"VN0010138","name":"Cẩm Phả","vung":"Vùng 06","grp":"","v":{"PVI":5.6,"TASCO":10.5,"DBV":5.1,"MIC":28.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":2,"DBV":1,"MIC":4,"PJICO":0},"t":49.2,"t8":97.2,"s30":54.7,"dom":"MIC","ds":0.569,"mic8s":0.705,"micdrop":0.531,"tier":[]},{"code":"VN0010425","name":"Long Hải","vung":"Vùng 11","grp":"","v":{"PVI":6.9,"TASCO":0.0,"DBV":42.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":0,"DBV":6,"MIC":0,"PJICO":0},"t":49.2,"t8":25.1,"s30":54.6,"dom":"DBV","ds":0.86,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010393","name":"Lương Sơn","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":48.3,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":5,"DBV":0,"MIC":0,"PJICO":0},"t":48.3,"t8":49.4,"s30":53.7,"dom":"TASCO","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010114","name":"Kim Mã","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":29.2,"MIC":18.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":3,"MIC":1,"PJICO":0},"t":47.6,"t8":104.7,"s30":52.9,"dom":"DBV","ds":0.613,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010190","name":"Ngô Quyền","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":35.1,"DBV":12.1,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":4,"DBV":2,"MIC":0,"PJICO":0},"t":47.2,"t8":29.0,"s30":52.4,"dom":"TASCO","ds":0.744,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010400","name":"Ninh Thuận","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":34.7,"DBV":8.8,"MIC":3.6,"PJICO":0.0},"g":{"PVI":0,"TASCO":6,"DBV":1,"MIC":1,"PJICO":0},"t":47.2,"t8":34.3,"s30":52.4,"dom":"TASCO","ds":0.736,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010276","name":"Đông Hà","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":16.1,"DBV":18.5,"MIC":11.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":3,"MIC":2,"PJICO":0},"t":45.6,"t8":25.4,"s30":50.7,"dom":"DBV","ds":0.406,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010166","name":"Bỉm Sơn","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":39.8,"DBV":4.8,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":4,"DBV":1,"MIC":0,"PJICO":0},"t":44.6,"t8":48.4,"s30":49.5,"dom":"TASCO","ds":0.893,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010228","name":"Vĩnh Long","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":44.4,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":7,"DBV":0,"MIC":0,"PJICO":0},"t":44.4,"t8":56.2,"s30":49.3,"dom":"TASCO","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010118","name":"Cầu Giấy","vung":"Vùng 01B","grp":"","v":{"PVI":6.3,"TASCO":0.0,"DBV":0.0,"MIC":35.9,"PJICO":0.0},"g":{"PVI":1,"TASCO":0,"DBV":0,"MIC":5,"PJICO":0},"t":42.2,"t8":32.5,"s30":46.9,"dom":"MIC","ds":0.851,"mic8s":0.998,"micdrop":-0.268,"tier":[]},{"code":"VN0010434","name":"Yên Khánh","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":41.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":7,"MIC":0,"PJICO":0},"t":41.7,"t8":104.9,"s30":46.4,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010317","name":"Lam Sơn","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":40.9,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":7,"DBV":0,"MIC":0,"PJICO":0},"t":40.9,"t8":34.2,"s30":45.4,"dom":"TASCO","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010215","name":"Long Biên","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":40.1,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":4,"MIC":0,"PJICO":0},"t":40.1,"t8":51.9,"s30":44.6,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010381","name":"Hội An","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":38.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":5,"MIC":0,"PJICO":0},"t":38.7,"t8":74.6,"s30":43.0,"dom":"DBV","ds":1.0,"mic8s":0.702,"micdrop":1.0,"tier":[]},{"code":"VN0010266","name":"Trần Phú","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":38.4,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":6,"DBV":0,"MIC":0,"PJICO":0},"t":38.4,"t8":85.8,"s30":42.7,"dom":"TASCO","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010268","name":"Sơn Trà","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":5.6,"MIC":32.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":5,"PJICO":0},"t":38.0,"t8":50.1,"s30":42.3,"dom":"MIC","ds":0.852,"mic8s":0.619,"micdrop":-0.2,"tier":[]},{"code":"VN0010415","name":"Đức Trọng","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":37.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":7,"MIC":0,"PJICO":0},"t":37.7,"t8":48.0,"s30":41.9,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010199","name":"Ba Đồn","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":15.0,"DBV":7.2,"MIC":14.6,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":1,"MIC":3,"PJICO":0},"t":36.9,"t8":61.3,"s30":41.0,"dom":"TASCO","ds":0.407,"mic8s":0.53,"micdrop":0.484,"tier":[]},{"code":"VN0010286","name":"Hàm Nghi","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":18.8,"MIC":17.5,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":4,"MIC":2,"PJICO":0},"t":36.3,"t8":57.3,"s30":40.3,"dom":"DBV","ds":0.518,"mic8s":0.81,"micdrop":0.567,"tier":[]},{"code":"VN0010143","name":"Phạm Văn Đồng","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":35.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":4,"MIC":0,"PJICO":0},"t":35.0,"t8":10.8,"s30":38.9,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010313","name":"Hồng Lĩnh","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":28.6,"DBV":0.0,"MIC":6.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":5,"DBV":0,"MIC":1,"PJICO":0},"t":34.5,"t8":60.0,"s30":38.4,"dom":"TASCO","ds":0.828,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010299","name":"Bến Ngự","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":6.5,"MIC":28.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":4,"PJICO":0},"t":34.4,"t8":41.5,"s30":38.3,"dom":"MIC","ds":0.813,"mic8s":0.561,"micdrop":-0.38,"tier":[]},{"code":"VN0010433","name":"Đức Hòa","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":9.3,"DBV":0.0,"MIC":24.9,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":3,"PJICO":0},"t":34.2,"t8":35.6,"s30":38.0,"dom":"MIC","ds":0.727,"mic8s":0.999,"micdrop":0.197,"tier":[]},{"code":"VN0010287","name":"Sông Đà","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":34.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":6,"PJICO":0},"t":34.0,"t8":13.7,"s30":37.7,"dom":"MIC","ds":1.001,"mic8s":0.997,"micdrop":-1.849,"tier":[]},{"code":"VN0010263","name":"Thái Hà","vung":"Vùng 01B","grp":"","v":{"PVI":14.2,"TASCO":0.0,"DBV":19.4,"MIC":0.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":0,"DBV":3,"MIC":0,"PJICO":0},"t":33.6,"t8":30.9,"s30":37.3,"dom":"DBV","ds":0.578,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010122","name":"Chợ Lớn","vung":"Vùng 09","grp":"","v":{"PVI":8.0,"TASCO":0.0,"DBV":5.8,"MIC":0.0,"PJICO":19.7},"g":{"PVI":1,"TASCO":0,"DBV":1,"MIC":0,"PJICO":2},"t":33.6,"t8":0.0,"s30":37.3,"dom":"PJICO","ds":0.587,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010182","name":"Phú Lâm","vung":"Vùng 09","grp":"","v":{"PVI":11.8,"TASCO":0.0,"DBV":0.0,"MIC":7.9,"PJICO":13.1},"g":{"PVI":2,"TASCO":0,"DBV":0,"MIC":1,"PJICO":2},"t":32.9,"t8":71.7,"s30":36.5,"dom":"PJICO","ds":0.399,"mic8s":0.452,"micdrop":0.72,"tier":[]},{"code":"VN0010139","name":"Gò Vấp","vung":"Vùng 09","grp":"","v":{"PVI":0.0,"TASCO":18.0,"DBV":14.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":1,"MIC":0,"PJICO":0},"t":32.0,"t8":56.7,"s30":35.6,"dom":"TASCO","ds":0.562,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010309","name":"Văn Phú","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":31.3,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":5,"PJICO":0},"t":31.3,"t8":0.0,"s30":34.8,"dom":"MIC","ds":1.0,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010211","name":"Phước Hải","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":14.4,"DBV":16.6,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":3,"MIC":0,"PJICO":0},"t":31.0,"t8":67.9,"s30":34.4,"dom":"DBV","ds":0.536,"mic8s":0.102,"micdrop":1.0,"tier":[]},{"code":"VN0010108","name":"Quảng Ninh","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":5.3,"DBV":0.0,"MIC":25.2,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":4,"PJICO":0},"t":30.4,"t8":115.4,"s30":33.8,"dom":"MIC","ds":0.828,"mic8s":0.657,"micdrop":0.618,"tier":[]},{"code":"VN0010252","name":"Linh Đàm","vung":"Vùng 02","grp":"","v":{"PVI":5.8,"TASCO":0.0,"DBV":22.9,"MIC":0.0,"PJICO":0.0},"g":{"PVI":1,"TASCO":0,"DBV":4,"MIC":0,"PJICO":0},"t":28.8,"t8":48.5,"s30":32.0,"dom":"DBV","ds":0.796,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010249","name":"Sông Lam","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":22.5,"DBV":5.6,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":1,"MIC":0,"PJICO":0},"t":28.0,"t8":43.3,"s30":31.1,"dom":"TASCO","ds":0.803,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010119","name":"Thăng Long","vung":"Vùng 03","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":28.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":4,"MIC":0,"PJICO":0},"t":28.0,"t8":43.9,"s30":31.1,"dom":"DBV","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010202","name":"Bạch Đằng","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":27.5,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":5,"DBV":0,"MIC":0,"PJICO":0},"t":27.5,"t8":20.3,"s30":30.6,"dom":"TASCO","ds":0.998,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010234","name":"Diễn Châu","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":26.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":4,"MIC":0,"PJICO":0},"t":26.3,"t8":34.6,"s30":29.2,"dom":"DBV","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010272","name":"Bến Lức","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":26.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":3,"PJICO":0},"t":26.0,"t8":0.0,"s30":28.9,"dom":"MIC","ds":1.001,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010458","name":"Trung tâm thế chấp Thanh Hóa","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":25.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":3,"MIC":0,"PJICO":0},"t":25.7,"t8":13.6,"s30":28.5,"dom":"DBV","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010116","name":"Chương Dương","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":3.8,"MIC":21.1,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":1,"PJICO":0},"t":24.9,"t8":15.5,"s30":27.7,"dom":"MIC","ds":0.847,"mic8s":0.49,"micdrop":-2.188,"tier":[]},{"code":"VN0010405","name":"Phước Kiến","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":24.8,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":0,"MIC":0,"PJICO":0},"t":24.8,"t8":8.8,"s30":27.6,"dom":"TASCO","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010455","name":"Trà Vinh","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":24.2},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":3},"t":24.2,"t8":46.2,"s30":26.9,"dom":"PJICO","ds":0.998,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010125","name":"Khánh Hội","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":23.3,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":0,"MIC":0,"PJICO":0},"t":23.3,"t8":16.6,"s30":25.9,"dom":"TASCO","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010235","name":"Hà Tây","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":14.1,"DBV":8.9,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":3,"MIC":0,"PJICO":0},"t":23.0,"t8":5.2,"s30":25.5,"dom":"TASCO","ds":0.614,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010338","name":"Láng Hạ","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":17.9,"MIC":4.9,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":3,"MIC":1,"PJICO":0},"t":22.9,"t8":42.8,"s30":25.4,"dom":"DBV","ds":0.783,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010414","name":"Chương Mỹ","vung":"Vùng 03","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":22.6,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":2,"MIC":0,"PJICO":0},"t":22.6,"t8":16.9,"s30":25.1,"dom":"DBV","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010307","name":"Trần Lãm","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":21.3,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":0,"MIC":0,"PJICO":0},"t":21.3,"t8":39.9,"s30":23.6,"dom":"TASCO","ds":1.002,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010293","name":"Lê Đức Thọ","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":20.5,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":0,"MIC":0,"PJICO":0},"t":20.5,"t8":0.0,"s30":22.7,"dom":"TASCO","ds":1.002,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010453","name":"Cai Lậy","vung":"Vùng 10","grp":"","v":{"PVI":0.0,"TASCO":20.0,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":0,"MIC":0,"PJICO":0},"t":20.0,"t8":21.3,"s30":22.2,"dom":"TASCO","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010194","name":"Lê Văn Sỹ","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":19.1,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":0,"MIC":0,"PJICO":0},"t":19.1,"t8":3.6,"s30":21.2,"dom":"TASCO","ds":1.002,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010437","name":"Sông Công","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":18.9,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":0,"MIC":0,"PJICO":0},"t":18.9,"t8":23.2,"s30":21.0,"dom":"TASCO","ds":0.998,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010403","name":"TT thế chấp Thăng Long","vung":"Vùng 03","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":18.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":3,"MIC":0,"PJICO":0},"t":18.3,"t8":24.5,"s30":20.3,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010300","name":"LaGi","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":17.8},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":2},"t":17.8,"t8":26.4,"s30":19.8,"dom":"PJICO","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010314","name":"Nguyễn Du","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":17.8,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":3,"DBV":0,"MIC":0,"PJICO":0},"t":17.8,"t8":23.6,"s30":19.8,"dom":"TASCO","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010369","name":"Yên Phong","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":17.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":2,"PJICO":0},"t":17.7,"t8":18.3,"s30":19.6,"dom":"MIC","ds":1.003,"mic8s":0.4,"micdrop":-1.784,"tier":[]},{"code":"VN0010151","name":"Âu Cơ","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":11.3,"MIC":6.1,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":1,"PJICO":0},"t":17.4,"t8":0.0,"s30":19.4,"dom":"DBV","ds":0.649,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010257","name":"Nguyễn Duy Trinh","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":17.2},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":2},"t":17.2,"t8":13.7,"s30":19.1,"dom":"PJICO","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010152","name":"Thụy Khuê","vung":"Vùng 03","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":17.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":2,"PJICO":0},"t":17.0,"t8":7.4,"s30":18.9,"dom":"MIC","ds":0.998,"mic8s":1.002,"micdrop":-1.638,"tier":[]},{"code":"VN0010200","name":"Lạc Quần","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":16.5},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":3},"t":16.5,"t8":32.8,"s30":18.3,"dom":"PJICO","ds":1.0,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010444","name":"Sơn La","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":16.2},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":2},"t":16.2,"t8":0.0,"s30":18.0,"dom":"PJICO","ds":0.999,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010265","name":"Quận 10","vung":"Vùng 09","grp":"","v":{"PVI":15.6,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":2,"TASCO":0,"DBV":0,"MIC":0,"PJICO":0},"t":15.6,"t8":12.3,"s30":17.4,"dom":"PVI","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010248","name":"Yên Hòa","vung":"Vùng 03","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":15.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":2,"MIC":0,"PJICO":0},"t":15.3,"t8":86.7,"s30":17.0,"dom":"DBV","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010274","name":"Từ Sơn","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":9.8,"PJICO":5.2},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":1},"t":15.0,"t8":17.8,"s30":16.6,"dom":"MIC","ds":0.655,"mic8s":0.998,"micdrop":0.368,"tier":[]},{"code":"VN0010172","name":"Bùi Hữu Nghĩa","vung":"Vùng 09","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":10.5,"MIC":4.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":1,"PJICO":0},"t":14.5,"t8":5.9,"s30":16.1,"dom":"DBV","ds":0.725,"mic8s":1.002,"micdrop":0.222,"tier":[]},{"code":"VN0010438","name":"Ứng Hòa","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":14.3,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":14.3,"t8":21.7,"s30":15.9,"dom":"MIC","ds":0.999,"mic8s":1.001,"micdrop":0.243,"tier":[]},{"code":"VN0010207","name":"Hiệp Hòa","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":14.2,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":2,"MIC":0,"PJICO":0},"t":14.2,"t8":68.6,"s30":15.7,"dom":"DBV","ds":1.003,"mic8s":0.57,"micdrop":1.0,"tier":[]},{"code":"VN0010168","name":"Khâm Thiên","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":14.1,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":2,"PJICO":0},"t":14.1,"t8":9.1,"s30":15.7,"dom":"MIC","ds":0.999,"mic8s":0.429,"micdrop":-3.151,"tier":[]},{"code":"VN0010305","name":"Lý Thường Kiệt","vung":"Vùng 09","grp":"","v":{"PVI":3.1,"TASCO":0.0,"DBV":5.5,"MIC":0.0,"PJICO":5.3},"g":{"PVI":1,"TASCO":0,"DBV":1,"MIC":0,"PJICO":1},"t":13.9,"t8":14.1,"s30":15.5,"dom":"DBV","ds":0.395,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010443","name":"Lạng Giang","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":13.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":13.3,"t8":11.6,"s30":14.8,"dom":"DBV","ds":0.998,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010247","name":"An Sương","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":4.0,"PJICO":8.6},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":1},"t":12.6,"t8":21.0,"s30":14.0,"dom":"PJICO","ds":0.682,"mic8s":0.998,"micdrop":0.781,"tier":[]},{"code":"VN0010251","name":"Hào Nam","vung":"Vùng 03","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":12.5},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":2},"t":12.5,"t8":0.0,"s30":13.9,"dom":"PJICO","ds":1.003,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010231","name":"Đông Anh","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":12.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":2,"PJICO":0},"t":12.4,"t8":7.1,"s30":13.8,"dom":"MIC","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010106","name":"Sài Gòn","vung":"Vùng 09","grp":"","v":{"PVI":0.0,"TASCO":12.1,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":0,"MIC":0,"PJICO":0},"t":12.1,"t8":6.5,"s30":13.4,"dom":"TASCO","ds":1.003,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010256","name":"Hải An","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":12.1,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":0,"MIC":0,"PJICO":0},"t":12.1,"t8":7.8,"s30":13.4,"dom":"TASCO","ds":1.003,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010250","name":"Tây Hồ","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":11.8,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":11.8,"t8":0.0,"s30":13.1,"dom":"MIC","ds":1.003,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010203","name":"Đông Thủ Đô","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":11.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":2,"MIC":0,"PJICO":0},"t":11.7,"t8":5.1,"s30":13.0,"dom":"DBV","ds":0.998,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010101","name":"Hà Nội","vung":"Vùng 01B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":11.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":2,"MIC":0,"PJICO":0},"t":11.3,"t8":0.0,"s30":12.6,"dom":"DBV","ds":0.996,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010186","name":"Quang Trung","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":11.1},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":2},"t":11.1,"t8":25.3,"s30":12.4,"dom":"PJICO","ds":0.998,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010321","name":"Phú Xuân","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":11.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":1},"t":11.0,"t8":0.0,"s30":12.3,"dom":"PJICO","ds":0.996,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010352","name":"Trung Sơn","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":10.5,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":0,"PJICO":0},"t":10.5,"t8":0.0,"s30":11.7,"dom":"TASCO","ds":0.996,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010430","name":"Thanh Oai","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":10.4,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":0,"MIC":0,"PJICO":0},"t":10.4,"t8":0.0,"s30":11.5,"dom":"TASCO","ds":1.001,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010187","name":"Kiến An","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":5.5,"DBV":4.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":1,"MIC":0,"PJICO":0},"t":10.2,"t8":5.7,"s30":11.3,"dom":"TASCO","ds":0.541,"mic8s":1.004,"micdrop":1.0,"tier":[]},{"code":"VN0010178","name":"Phan Huy ích","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":10.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":10.0,"t8":6.5,"s30":11.1,"dom":"MIC","ds":0.997,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010399","name":"Kim Tân","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":9.7,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":2,"MIC":0,"PJICO":0},"t":9.7,"t8":5.0,"s30":10.8,"dom":"DBV","ds":0.999,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010123","name":"Thủ Đức","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":9.3,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":9.3,"t8":8.9,"s30":10.4,"dom":"MIC","ds":0.995,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010136","name":"Tân Bình","vung":"Vùng 08B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":9.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":9.3,"t8":10.5,"s30":10.4,"dom":"DBV","ds":0.996,"mic8s":0.583,"micdrop":1.0,"tier":[]},{"code":"VN0010432","name":"Yên Lạc","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":8.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":8.7,"t8":0.0,"s30":9.7,"dom":"MIC","ds":1.001,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010440","name":"Lý Nhân","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":8.7},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":1},"t":8.7,"t8":0.0,"s30":9.7,"dom":"PJICO","ds":1.001,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010431","name":"VPBANK NHU QUYNH","vung":"Vùng 06","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":8.6,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":8.6,"t8":15.3,"s30":9.5,"dom":"DBV","ds":1.005,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010423","name":"Hòa Xuân","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":8.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":8.3,"t8":28.0,"s30":9.2,"dom":"DBV","ds":1.001,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010422","name":"Quế Võ","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":7.9,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":7.9,"t8":47.5,"s30":8.8,"dom":"DBV","ds":0.997,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010396","name":"Đồng Văn","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":7.8,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":2,"DBV":0,"MIC":0,"PJICO":0},"t":7.8,"t8":36.0,"s30":8.7,"dom":"TASCO","ds":0.995,"mic8s":0.663,"micdrop":1.0,"tier":[]},{"code":"VN0010241","name":"Kinh Đô","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":7.5,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":7.5,"t8":0.0,"s30":8.4,"dom":"DBV","ds":0.994,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010280","name":"Đội Cung","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":7.5,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":0,"PJICO":0},"t":7.5,"t8":22.4,"s30":8.4,"dom":"TASCO","ds":0.996,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010394","name":"Phổ Yên","vung":"Vùng 04","grp":"","v":{"PVI":0.0,"TASCO":7.0,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":0,"PJICO":0},"t":7.0,"t8":42.9,"s30":7.8,"dom":"TASCO","ds":0.995,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010173","name":"Kim Liên","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":6.5},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":1},"t":6.5,"t8":0.0,"s30":7.2,"dom":"PJICO","ds":0.999,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010230","name":"Sầm Sơn","vung":"Vùng 05","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":6.3,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":6.3,"t8":0.0,"s30":7.0,"dom":"DBV","ds":1.003,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010183","name":"Kỳ Hòa","vung":"Vùng 09","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":6.2,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":6.2,"t8":20.5,"s30":6.9,"dom":"MIC","ds":1.0,"mic8s":1.001,"micdrop":0.653,"tier":[]},{"code":"VN0010218","name":"Quận 3","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":6.2,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":6.2,"t8":6.6,"s30":6.9,"dom":"MIC","ds":1.003,"mic8s":0.998,"micdrop":-0.079,"tier":[]},{"code":"VN0010391","name":"Hoa Lư","vung":"Vùng 06B","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":5.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":5.7,"t8":12.2,"s30":6.3,"dom":"MIC","ds":1.002,"mic8s":0.999,"micdrop":0.464,"tier":[]},{"code":"VN0010254","name":"Hưng Vượng","vung":"Vùng 08","grp":"","v":{"PVI":0.0,"TASCO":5.6,"DBV":0.0,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":1,"DBV":0,"MIC":0,"PJICO":0},"t":5.6,"t8":0.0,"s30":6.2,"dom":"TASCO","ds":0.998,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010395","name":"Văn Giang","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":5.5,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":5.5,"t8":29.9,"s30":6.2,"dom":"DBV","ds":0.993,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010219","name":"Đông Đô","vung":"Vùng 02","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":5.4,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":5.4,"t8":4.2,"s30":6.0,"dom":"MIC","ds":1.008,"mic8s":1.009,"micdrop":-0.476,"tier":[]},{"code":"VN0010124","name":"Tân Phú","vung":"Vùng 09","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":0.0,"PJICO":5.2},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":0,"PJICO":1},"t":5.2,"t8":0.0,"s30":5.8,"dom":"PJICO","ds":1.002,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010424","name":"Tân Uyên","vung":"Vùng 11","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":4.9,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":4.9,"t8":0.0,"s30":5.5,"dom":"MIC","ds":0.991,"mic8s":0,"micdrop":0,"tier":[]},{"code":"VN0010134","name":"Vỹ Dạ","vung":"Vùng 07","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":0.0,"MIC":4.7,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":0,"MIC":1,"PJICO":0},"t":4.7,"t8":24.6,"s30":5.2,"dom":"MIC","ds":1.002,"mic8s":0.0,"micdrop":0,"tier":[]},{"code":"VN0010167","name":"Đồng Tâm","vung":"Vùng 01","grp":"","v":{"PVI":0.0,"TASCO":0.0,"DBV":4.2,"MIC":0.0,"PJICO":0.0},"g":{"PVI":0,"TASCO":0,"DBV":1,"MIC":0,"PJICO":0},"t":4.2,"t8":4.9,"s30":4.7,"dom":"DBV","ds":0.991,"mic8s":0.0,"micdrop":0,"tier":[]}],"smeTop":[{"name":"Micro Hà Thành","vung":"Miền Bắc KHDN vi mô","v":{"TASCO":879.3,"DBV":605.1,"MIC":1125.5,"PJICO":42.3},"t":2652.2},{"name":"Micro Mỹ Đình","vung":"Miền Bắc KHDN vi mô","v":{"TASCO":2128.5,"DBV":14.6,"MIC":151.0,"PJICO":218.8},"t":2512.9},{"name":"Micro Đông Hà Nội","vung":"Miền Bắc KHDN vi mô","v":{"TASCO":241.9,"DBV":58.5,"MIC":1246.1,"PJICO":191.2},"t":1737.7},{"name":"Micro Tây Hà Nội","vung":"Miền Bắc KHDN vi mô","v":{"TASCO":398.8,"DBV":61.5,"MIC":936.8,"PJICO":269.6},"t":1666.7},{"name":"SME Hội Sở","vung":"Vùng Hà Nội 1","v":{"TASCO":25.8,"DBV":1203.1,"MIC":171.6,"PJICO":113.3},"t":1513.8},{"name":"SME Bắc Ninh","vung":"Vùng Đông Bắc Bộ","v":{"TASCO":25.3,"DBV":37.1,"MIC":805.6,"PJICO":245.6},"t":1113.6},{"name":"SME Hòa Bình","vung":"Vùng Đông Bắc Bộ","v":{"TASCO":67.6,"DBV":117.7,"MIC":259.2,"PJICO":665.1},"t":1109.6},{"name":"Micro Thành Công","vung":"Miền Bắc KHDN vi mô","v":{"TASCO":74.6,"DBV":0.0,"MIC":929.5,"PJICO":15.2},"t":1019.3},{"name":"SME Hải Dương","vung":"Vùng Đông Bắc Bộ","v":{"TASCO":512.4,"DBV":10.7,"MIC":411.6,"PJICO":5.6},"t":940.3},{"name":"SME Bắc Giang","vung":"Vùng Đông Bắc Bộ","v":{"TASCO":37.9,"DBV":201.7,"MIC":530.4,"PJICO":58.9},"t":828.9},{"name":"SME Bình Dương","vung":"Vùng Hồ Chí Minh 2","v":{"TASCO":30.9,"DBV":466.2,"MIC":252.9,"PJICO":60.3},"t":810.3},{"name":"SME Cần Thơ","vung":"Vùng MeKong","v":{"TASCO":69.0,"DBV":85.7,"MIC":99.3,"PJICO":216.8},"t":470.8},{"name":"SME Phú Yên","vung":"Vùng Tây Nguyên","v":{"TASCO":318.4,"DBV":8.2,"MIC":130.2,"PJICO":0.0},"t":456.8},{"name":"SME Phú Thọ","vung":"Vùng Đông Bắc Bộ","v":{"TASCO":0.0,"DBV":91.8,"MIC":352.5,"PJICO":0.0},"t":444.3},{"name":"SME Đắk Lắk","vung":"Vùng Tây Nguyên","v":{"TASCO":23.1,"DBV":76.4,"MIC":42.9,"PJICO":292.4},"t":434.8}]};
+const SER = [
+  {k:'PVI',  l:'BH PVI', c:'var(--s-pvi)'},
+  {k:'TASCO',l:'TASCO',  c:'var(--s-tasco)'},
+  {k:'DBV',  l:'DBV',    c:'var(--s-dbv)'},
+  {k:'MIC',  l:'MIC',    c:'var(--s-mic)'},
+  {k:'PJICO',l:'PJICO',  c:'var(--s-pjico)'},
+];
+const NS='http://www.w3.org/2000/svg';
+const fmt = (v,d=1)=> v.toLocaleString('vi-VN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = (v,d=1)=> fmt(v*100,d)+'%';
+const sum = a=>a.reduce((x,y)=>x+y,0);
+function el(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function h(tag,attrs={},text){const e=document.createElement(tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;return e;}
+function legend(id,keys){const L=document.getElementById(id);L.innerHTML='';SER.filter(s=>keys.includes(s.k)).forEach(s=>{const sp=h('span');const i=h('i');i.style.background=s.c;sp.appendChild(i);sp.appendChild(document.createTextNode(s.l));L.appendChild(sp);});}
+
+// tooltip
+const tip=document.getElementById('tip');
+function showTip(ev,title,rows){
+  tip.innerHTML='';
+  tip.appendChild(h('div',{style:'color:var(--text-2);margin-bottom:4px'},title));
+  rows.forEach(r=>{const row=h('div',{class:'row'});const left=h('span');if(r.c){const k=h('span',{class:'k'});k.style.background=r.c;left.appendChild(k);}left.appendChild(document.createTextNode(r.l));const b=h('b',{},r.v);if(!r.strong)b.style.fontSize='12.5px';row.appendChild(left);row.appendChild(b);tip.appendChild(row);});
+  tip.style.opacity=1; moveTip(ev);
+}
+function moveTip(ev){const r=ev.target.getBoundingClientRect?ev.target.getBoundingClientRect():null;let x=ev.clientX??(r.left+r.width/2),y=ev.clientY??r.top;const w=tip.offsetWidth,hh=tip.offsetHeight;x=Math.min(x+14,innerWidth-w-8);y=y-hh-12<8?y+16:y-hh-12;tip.style.left=x+'px';tip.style.top=y+'px';}
+function hideTip(){tip.style.opacity=0;}
+function bindTip(node,fn){node.setAttribute('tabindex','0');node.addEventListener('pointermove',e=>fn(e));node.addEventListener('focus',e=>fn(e));node.addEventListener('pointerleave',hideTip);node.addEventListener('blur',hideTip);}
+
+// ---------- KPIs
+(function(){
+  const rbY=sum(Object.values(D.rb).map(a=>sum(a))), smeY=sum(Object.values(D.sme).map(a=>sum(a)));
+  const rb9=sum(Object.values(D.rb).map(a=>a[8])), rb8=sum(Object.values(D.rb).map(a=>a[7]));
+  const w4=D.weeks[3].tot, w4t=sum(Object.values(w4));
+  const pviG=sum(D.branches.map(b=>b.g.PVI)), pviN=D.branches.filter(b=>b.g.PVI>0).length;
+  const hubT=sum(D.branches.filter(b=>b.tier.includes('HUB')).map(b=>b.t));
+  const K=[
+    {lab:'Tổng phí O.CarCare 9 tháng (RB + SME)',val:fmt((rbY+smeY)/1e9,1)+' <small>tỷ</small>',note:'RB '+fmt(rbY/1e9,1)+' tỷ · SME '+fmt(smeY/1e9,1)+' tỷ'},
+    {lab:'Nhịp tháng 9 kênh RB',val:fmt(rb9/27/1e9,2)+' <small>tỷ/ngày</small>',note:'T8: '+fmt(rb8/31/1e9,2)+' tỷ/ngày → T9 thực tế tăng ~'+fmt((rb9/27)/(rb8/31)*100-100,0)+'%'},
+    {lab:'BH PVI tuần đầu (21–27/9)',val:fmt(w4.PVI/1e6,0)+' <small>tr</small>',note:pviG+' GCN · '+pviN+' đơn vị · '+pct(w4.PVI/w4t)+' thị phần tuần',hl:1},
+    {lab:'2 Hub TTKD ô tô chiếm',val:pct(hubT/(rb9/1e6),0),note:fmt(hubT/1e3,1)+' tỷ trong tháng 9 · BH PVI mới có '+fmt(sum(D.branches.filter(b=>b.tier.includes('HUB')).map(b=>b.v.PVI)),0)+' tr'},
+  ];
+  const box=document.getElementById('kpis');
+  K.forEach(k=>{const c=h('div',{class:'card kpi'+(k.hl?' hl':'')});c.appendChild(h('div',{class:'lab'},k.lab));const v=h('div',{class:'val'});v.innerHTML=k.val;c.appendChild(v);c.appendChild(h('div',{class:'note'},k.note));box.appendChild(c);});
+})();
+
+// ---------- stacked columns
+function stackCols(host,cats,series,opt){
+  host.innerHTML='';
+  const W=560,H=opt.h||270,m={t:34,r:8,b:26,l:38};
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':opt.aria},host);
+  const iw=W-m.l-m.r, ih=H-m.t-m.b, n=cats.length, bw=Math.min(40,iw/n*0.62), step=iw/n;
+  const totals=cats.map((_,i)=>sum(series.map(s=>s.vals[i]||0)));
+  const max=opt.percent?1:Math.max(...totals)*1.08;
+  const y=v=>m.t+ih-(v/max)*ih;
+  const ticks=opt.percent?[0,.25,.5,.75,1]:opt.ticks;
+  ticks.forEach(t=>{el('line',{x1:m.l,x2:W-m.r,y1:y(t),y2:y(t),class:'axis','stroke-width':t===0?1:.6,'stroke-dasharray':t===0?'':'2 3'},svg);const tx=el('text',{x:m.l-6,y:y(t)+3.5,'text-anchor':'end'},svg);tx.textContent=opt.percent?Math.round(t*100)+'%':fmt(t/opt.div,0);});
+  cats.forEach((c,i)=>{
+    const x=m.l+step*i+(step-bw)/2; let acc=0;
+    const base=opt.percent?totals[i]:1;
+    const segs=series.filter(s=>(s.vals[i]||0)>0);
+    segs.forEach((s,j)=>{
+      const v=(s.vals[i]||0)/ (opt.percent?base:1);
+      const y0=y(acc), y1=y(acc+v); acc+=v;
+      const hgt=Math.max(0,y0-y1-(j<segs.length-1?2:0));
+      const top=j===segs.length-1;
+      const r=el('path',{d:top?roundTop(x,y1,bw,hgt,3):`M${x},${y1+(y0-y1-hgt)}h${bw}v${hgt}h${-bw}z`,fill:s.c,class:'mk'},svg);
+      if(top) r.setAttribute('d',roundTop(x,y0-hgt- (0),bw,hgt,3));
+      else r.setAttribute('d',`M${x},${y0-hgt}h${bw}v${hgt}h${-bw}z`);
+      bindTip(r,e=>showTip(e,c,series.slice().reverse().filter(q=>(q.vals[i]||0)>0).map(q=>({c:q.c,l:q.l,v:opt.percent?pct(q.vals[i]/totals[i]):fmt(q.vals[i]/opt.div,2)+' '+opt.unit,strong:q.k===s.k})).concat(opt.percent?[]:[{l:'Tổng',v:fmt(totals[i]/opt.div,2)+' '+opt.unit}])));
+    });
+    const tx=el('text',{x:x+bw/2,y:H-8,'text-anchor':'middle'},svg);tx.textContent=c;
+    if(opt.labelTop){const t=el('text',{x:x+bw/2,y:y(totals[i])-5,'text-anchor':'middle',style:'fill:var(--text);font-weight:600'},svg);t.textContent=fmt(totals[i]/opt.div,1);}
+  });
+  if(opt.directLast){ // label shares at last column
+    const i=n-1,x=m.l+step*i+(step-bw)/2+bw+4;let acc=0;
+    series.forEach(s=>{const v=(s.vals[i]||0)/totals[i];if(v>0.06){const t=el('text',{x,y:y(acc+v/2)+3.5,style:'fill:var(--text-2)'},svg);t.textContent=Math.round(v*100)+'%';}acc+=v;});
+  }
+  return {svg,x:i=>m.l+step*i+(step-bw)/2,bw,y};
+}
+function roundTop(x,y,w,hh,r){r=Math.min(r,hh,w/2);return `M${x},${y+hh}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+hh}Z`;}
+
+// monthly share
+const MONTHS=['T1','T2','T3','T4','T5','T6','T7','T8','T9'];
+function drawMonth(k){
+  const src=D[k];
+  const ser=SER.filter(s=>src[s.k]&&sum(src[s.k])>0).slice().reverse().reverse();
+  // stack order bottom->top: PVI, TASCO, DBV, MIC, PJICO
+  legend('lg1',ser.map(s=>s.k));
+  stackCols(document.getElementById('chMonth'),MONTHS,ser.map(s=>({...s,vals:src[s.k]})),{percent:true,aria:'Thị phần nhà đồng theo tháng',directLast:true});
+}
+document.querySelectorAll('#segMonth button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#segMonth button').forEach(x=>x.classList.toggle('on',x===b));drawMonth(b.dataset.k);});
+drawMonth('rb');
+
+// weekly
+(function(){
+  legend('lg2',SER.map(s=>s.k));
+  const cats=D.weeks.map(w=>w.label);
+  const g=stackCols(document.getElementById('chWeek'),cats,SER.map(s=>({...s,vals:D.weeks.map(w=>w.tot[s.k]||0)})),{percent:false,ticks:[0,2e9,4e9,6e9,8e9,10e9],div:1e9,unit:'tỷ',labelTop:true,aria:'Doanh thu theo tuần tháng 9'});
+  const w4=D.weeks[3].tot,w4t=sum(Object.values(w4)),xx=g.x(3),yy=g.y(w4.PVI/2);
+  const ty=g.y(w4t)-20;
+  const a=el('text',{x:xx+g.bw/2,y:ty,'text-anchor':'middle',style:'fill:var(--text);font-weight:600'},g.svg);a.textContent='BH PVI '+pct(w4.PVI/w4t);
+  const r=el('rect',{x:xx+g.bw/2-44,y:ty-9,width:4,height:10,rx:1,fill:'var(--s-pvi)'},g.svg);
+})();
+
+// vung (week 4) horizontal 100% bars
+(function(){
+  legend('lg3',SER.map(s=>s.k));
+  const V=Object.entries(D.vungW4).map(([k,v])=>({k,v,t:sum(Object.values(v))})).sort((a,b)=>b.t-a.t);
+  const host=document.getElementById('chVung');
+  const rowH=24,W=900,m={l:150,r:130},H=V.length*rowH+8;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Cơ cấu nhà đồng theo Vùng tuần 21-27/9'},host);
+  const iw=W-m.l-m.r;
+  V.forEach((r,i)=>{
+    const y=4+i*rowH;
+    const nm=el('text',{x:m.l-8,y:y+rowH/2+3,'text-anchor':'end',style:'fill:var(--text)'},svg);nm.textContent=r.k.replace('TTKD ô tô ','Hub ');
+    let x=m.l; const segs=SER.filter(s=>(r.v[s.k]||0)>0);
+    segs.forEach((s,j)=>{const w=(r.v[s.k]/r.t)*iw;const rect=el('rect',{x,y:y+5,width:Math.max(0,w-(j<segs.length-1?2:0)),height:rowH-10,rx:2,fill:s.c,class:'mk'},svg);
+      bindTip(rect,e=>showTip(e,r.k+' · tuần 21–27/9',segs.map(q=>({c:q.c,l:q.l,v:fmt(r.v[q.k]/1e6,0)+' tr · '+pct(r.v[q.k]/r.t,0),strong:q.k===s.k})).concat([{l:'Tổng',v:fmt(r.t/1e6,0)+' tr'}])));x+=w;});
+    const p=(r.v.PVI||0)/r.t;
+    const t1=el('text',{x:W-m.r+10,y:y+rowH/2+3.5,style:'fill:var(--text);font-weight:600'},svg);t1.textContent=p>0?'BH PVI '+pct(p,1):'BH PVI —';
+    const t2=el('text',{x:W-m.r+86,y:y+rowH/2+3.5},svg);t2.textContent=fmt(r.t/1e6,0)+' tr';
+  });
+})();
+
+// opportunity groups
+const GRP={
+  HUB:{n:1,t:'2 Hub TTKD ô tô – miếng bánh lớn nhất',c:'var(--s-tasco)',
+    why:'<b>Vì sao:</b> 2 Hub chiếm ~1/3 doanh thu toàn chương trình, TASCO và DBV đang chia gần hết.',
+    act:'<b>Việc cần làm:</b> đàm phán với OPES tỷ lệ chia đơn tại Hub cho BH PVI.'},
+  A:{n:2,t:'Đã bán được – cần đẩy thêm',c:'var(--s-pvi)',
+    why:'<b>Vì sao:</b> cán bộ bán VPBank ở đây đã ra đơn BH PVI trong tuần đầu, và đơn vị có quy mô từ 100 tr/tháng.',
+    act:'<b>Việc cần làm:</b> đơn vị BH PVI phụ trách chăm sóc sát để tăng từ vài GCN lên thành nhà đồng chính.'},
+  B:{n:3,t:'MIC đang bỏ trống',c:'var(--s-mic)',
+    why:'<b>Vì sao:</b> tháng 8 MIC còn chiếm từ 20% trở lên, sang tháng 9 tỷ trọng MIC tụt ít nhất 10 điểm %. Phần MIC để lại chưa ai giữ chắc.',
+    act:'<b>Việc cần làm:</b> vào ngay trong đợt Sale Contest, trước khi TASCO/DBV lấp chỗ.'},
+  C:{n:4,t:'Đơn vị lớn, chưa ai nắm chắc',c:'var(--s-dbv)',
+    why:'<b>Vì sao:</b> phí từ 200 tr/tháng mà nhà đồng lớn nhất chưa tới 60% – vẫn còn chỗ cho nhà đồng mới.',
+    act:'<b>Việc cần làm:</b> giới thiệu BH PVI với lãnh đạo chi nhánh, đưa vào danh sách ưu tiên.'},
+};
+function pviCell(b){return b.v.PVI>0?fmt(b.v.PVI,1)+' tr ('+b.g.PVI+' GCN)':'Chưa có';}
+(function(){
+  const box=document.getElementById('opps');
+  Object.entries(GRP).forEach(([k,g])=>{
+    const L=D.branches.filter(b=>b.grp===k);
+    const card=h('div',{class:'opp'});
+    const hd=h('div',{class:'hd'});const no=h('div',{class:'no'},String(g.n));no.style.background=g.c;hd.appendChild(no);
+    const tt=h('div');tt.appendChild(h('h3',{},g.t));tt.appendChild(h('div',{class:'meta'},L.length+' đơn vị · khoảng '+fmt(sum(L.map(b=>b.s30))/1e3,1)+' tỷ phí/tháng'));hd.appendChild(tt);card.appendChild(hd);
+    const w=h('p',{class:'why'});w.innerHTML=g.why+'<br>'+g.act;card.appendChild(w);
+    const tb=h('table');const tr0=h('tr');
+    const cols=['Đơn vị','Phí/tháng','Đang nắm nhiều nhất',k==='B'?'Tỷ trọng MIC T8 → T9':'BH PVI đã bán'];
+    cols.forEach((c,i)=>tr0.appendChild(h('th',{class:i===1?'n':''},c)));tb.appendChild(tr0);
+    L.forEach(b=>{const tr=h('tr');
+      const td=h('td');td.appendChild(document.createTextNode(b.name.replace('VPBANK SO GIAO DICH 2','Sở giao dịch 2').replace('TTKD ô tô ','Hub ')));if(k!=='HUB')td.appendChild(h('span',{class:'vg'},b.vung));tr.appendChild(td);
+      tr.appendChild(h('td',{class:'n'},fmt(b.s30,0)+' tr'));
+      tr.appendChild(h('td',{},SER.find(s=>s.k===b.dom).l+' '+pct(b.ds,0)));
+      if(k==='B') tr.appendChild(h('td',{style:'white-space:nowrap'},pct(b.mic8s,0)+' → '+pct(b.t?b.v.MIC/b.t:0,0)));
+      else tr.appendChild(h('td',{class:b.v.PVI>0?'yes':'no-pvi'},pviCell(b)));
+      tb.appendChild(tr);});
+    card.appendChild(tb);
+    if(k==='HUB'){const tot=sum(L.map(b=>b.t)),pv=sum(L.map(b=>b.v.PVI)),m=sum(L.map(b=>b.s30));
+      const p=h('p',{class:'why',style:'margin-top:12px'});p.innerHTML='<b>Để hình dung:</b> BH PVI mới chiếm '+pct(pv/tot,1)+' phí tháng 9 tại 2 Hub. Mỗi 10% thị phần Hub ≈ '+fmt(m*0.1/1e3,1)+' tỷ phí/tháng, tức khoảng '+fmt(m*0.04/1e3,2)+' tỷ phần BH PVI giữ lại nếu tỷ lệ là 40%.';card.appendChild(p);}
+    box.appendChild(card);
+  });
+})();
+
+// full lookup table
+const TIERS=[['all','Tất cả'],['HUB','1 · Hub'],['A','2 · Đã bán được'],['B','3 · MIC bỏ trống'],['C','4 · Chưa ai nắm chắc'],['pvi','Có đơn BH PVI']];
+let tierSel='all';
+(function(){
+  legend('lg5',SER.map(s=>s.k));
+  const c=document.getElementById('chips');
+  TIERS.forEach(([k,l])=>{const b=h('button',{class:'chipbtn'+(k==='all'?' on':''),type:'button'},l);b.onclick=()=>{tierSel=k;c.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));drawTable();};c.appendChild(b);});
+  document.getElementById('q').addEventListener('input',drawTable);
+})();
+function drawTable(){
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  let L=D.branches.filter(b=>tierSel==='all'||(tierSel==='pvi'?b.v.PVI>0:b.grp===tierSel));
+  if(q) L=L.filter(b=>(b.name+' '+b.vung).toLowerCase().includes(q));
+  document.getElementById('tierNote').textContent=L.length+' đơn vị · khoảng '+fmt(sum(L.map(b=>b.s30))/1e3,1)+' tỷ phí/tháng. Rê chuột vào thanh màu để xem số tiền từng nhà đồng.';
+  const T=document.getElementById('tbl');T.innerHTML='';
+  const hd=h('tr');['Đơn vị','Vùng','Phí T9 (triệu)','Chia cho các nhà đồng','Nhà đồng lớn nhất','BH PVI đã bán','Nhóm'].forEach((x,i)=>hd.appendChild(h('th',{class:i===2?'n':''},x)));
+  const th=h('thead');th.appendChild(hd);T.appendChild(th);
+  const tb=h('tbody');
+  L.forEach(b=>{
+    const tr=h('tr');
+    tr.appendChild(h('td',{},b.name));
+    tr.appendChild(h('td',{style:'color:var(--text-2);white-space:nowrap'},b.vung));
+    tr.appendChild(h('td',{class:'n'},fmt(b.t,0)));
+    const td=h('td');const mix=h('div',{class:'mix'});
+    SER.forEach(s=>{if(b.v[s.k]>0){const sp=h('span');sp.style.width=(b.v[s.k]/b.t*100)+'%';sp.style.background=s.c;bindTip(sp,e=>showTip(e,b.name,SER.filter(q=>b.v[q.k]>0).map(q=>({c:q.c,l:q.l,v:fmt(b.v[q.k],0)+' tr · '+b.g[q.k]+' GCN',strong:q.k===s.k}))));mix.appendChild(sp);}});
+    td.appendChild(mix);tr.appendChild(td);
+    tr.appendChild(h('td',{style:'white-space:nowrap'},SER.find(s=>s.k===b.dom).l+' '+pct(b.ds,0)));
+    tr.appendChild(h('td',{style:b.v.PVI>0?'font-weight:600;white-space:nowrap':'color:var(--muted)'},b.v.PVI>0?pviCell(b):'—'));
+    tr.appendChild(h('td',{style:'color:var(--text-2);white-space:nowrap'},b.grp?GRP[b.grp].n+' · '+GRP[b.grp].t.split(' – ')[0]:''));
+    tb.appendChild(tr);
+  });
+  T.appendChild(tb);
+}
+drawTable();
+
+// calculator
+(function(){
+  const rb9=sum(Object.values(D.rb).map(a=>a[8]))/27*30;
+  const sme9=sum(Object.values(D.sme).map(a=>a[8]))/27*30;
+  const w4=D.weeks[3].tot,w4t=sum(Object.values(w4));
+  const rS=document.getElementById('rShare'),rK=document.getElementById('rKeep'),cS=document.getElementById('cSme');
+  document.getElementById('refs').textContent='Mốc so sánh tuần 21–27/9: BH PVI '+pct(w4.PVI/w4t)+' · PJICO '+pct(w4.PJICO/w4t)+' · MIC '+pct(w4.MIC/w4t)+' · DBV '+pct(w4.DBV/w4t)+' · TASCO '+pct(w4.TASCO/w4t);
+  function upd(){
+    const s=rS.value/100,k=rK.value/100,base=rb9+(cS.checked?sme9:0);
+    document.getElementById('lShare').textContent=rS.value+'%';
+    document.getElementById('lKeep').textContent=rK.value+'%';
+    document.getElementById('o1').textContent=fmt(base*s/1e9,2)+' tỷ';
+    document.getElementById('o2').textContent=fmt(base*s*k/1e9,2)+' tỷ';
+    document.getElementById('o3').textContent=fmt(base*s*k*12/1e9,1)+' tỷ';
+  }
+  [rS,rK,cS].forEach(x=>x.addEventListener('input',upd));upd();
+})();
+
+// SME top units
+(function(){
+  const S=SER.filter(s=>s.k!=='PVI');
+  legend('lg4',S.map(s=>s.k));
+  const L=D.smeTop.slice(0,10), host=document.getElementById('chSme');
+  const rowH=24,W=560,m={l:150,r:50},H=L.length*rowH+8,iw=W-m.l-m.r,max=Math.max(...L.map(r=>r.t));
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Top đơn vị SME'},host);
+  L.forEach((r,i)=>{const y=4+i*rowH;const nm=el('text',{x:m.l-8,y:y+rowH/2+3,'text-anchor':'end',style:'fill:var(--text)'},svg);nm.textContent=r.name;
+    let x=m.l;const segs=S.filter(s=>r.v[s.k]>0);
+    segs.forEach((s,j)=>{const w=r.v[s.k]/max*iw;const rc=el('rect',{x,y:y+5,width:Math.max(0,w-(j<segs.length-1?2:0)),height:rowH-10,rx:2,fill:s.c,class:'mk'},svg);bindTip(rc,e=>showTip(e,r.name+' · '+r.vung,segs.map(q=>({c:q.c,l:q.l,v:fmt(r.v[q.k],0)+' tr',strong:q.k===s.k}))));x+=w;});
+    const t=el('text',{x:x+6,y:y+rowH/2+3.5,style:'fill:var(--text);font-weight:600'},svg);t.textContent=fmt(r.t,0);});
+})();
+
+// quick read + insights + reco
+(function(){
+  const rb=D.rb, m9=k=>rb[k][8]/sum(Object.values(rb).map(a=>a[8])), m1=k=>rb[k][0]/sum(Object.values(rb).map(a=>a[0]));
+  const q=document.getElementById('quick');
+  const items=[
+    ['Phí bình quân / GCN (T9, RB)', 'BH PVI 6,9 tr · TASCO 6,9 · DBV 7,1 · MIC 7,3 · PJICO 7,3 tr'],
+    ['80% doanh thu RB tháng 9 đến từ', '65 / 226 đơn vị VPBank'],
+    ['Đơn vị (DT ≥ 50 tr) có 1 nhà đồng chiếm > 60%', '97 / 119'],
+    ['TASCO + DBV trong tháng 9', pct(m9('TASCO')+m9('DBV'),0)+' doanh thu RB'],
+    ['MIC: T1 → T9', pct(m1('MIC'),1)+' → '+pct(m9('MIC'),1)],
+    ['Vùng chưa có đơn BH PVI tuần đầu', 'Vùng 1, Vùng 3, Vùng 8B (8B ≈ 512 tr/tuần)'],
+  ];
+  const t=h('table',{class:'tbl'});items.forEach(([a,b])=>{const tr=h('tr');tr.appendChild(h('td',{style:'color:var(--text-2)'},a));tr.appendChild(h('td',{style:'font-weight:600'},b));t.appendChild(tr);});q.appendChild(t);
+
+  const INS=[
+    {t:'Tỷ lệ chia giữa các nhà đồng thay đổi được',big:'MIC 21% → 11%',sm:'từ tháng 1 đến tháng 9',
+     p:'Phần của MIC giảm gần một nửa, còn phần của TASCO tăng từ 38% lên 46%. Nghĩa là OPES/VPBank vẫn đang chia lại đơn giữa các nhà đồng.',
+     so:'BH PVI có cơ sở để đề nghị OPES chia thêm đơn cho mình.'},
+    {t:'Mỗi chi nhánh thường bán chủ yếu cho 1 nhà đồng',big:'8 / 10',sm:'chi nhánh dồn hơn 60% đơn cho 1 nhà đồng',
+     p:'Trong 119 đơn vị bán từ 50 triệu/tháng trở lên, có 97 đơn vị mà một nhà đồng chiếm hơn 60%. Việc chia đơn đi theo từng chi nhánh, không chia đều.',
+     so:'Nên chọn một số chi nhánh để làm kỹ, thay vì dàn trải khắp nơi.'},
+    {t:'2 Hub bán 1/3 tổng phí, BH PVI gần như chưa có',big:'34% vs 0,4%',sm:'phần của 2 Hub · phần của BH PVI tại Hub',
+     p:'Hub Bắc và Hub Nam bán khoảng 10,9 tỷ trong tháng 9, gần như toàn bộ chia cho TASCO và DBV. BH PVI mới có 44 triệu.',
+     so:'Đây là chỗ tăng nhanh nhất – nhưng cần OPES đồng ý chia đơn.'},
+    {t:'Tuần đầu tiên của BH PVI',big:'3,8%',sm:'thị phần tuần 21–27/9',
+     p:'Bán được 372 triệu, 54 GCN ở 28 đơn vị. Trong các Vùng bán nhiều, tốt nhất là Vùng 7 (15%) và Vùng 6B (9%). Phí trung bình mỗi GCN 6,9 triệu – ngang các nhà đồng khác.',
+     so:'Khởi đầu ổn; cần thêm vài tuần số liệu để kết luận chắc.'},
+  ];
+  const box=document.getElementById('insights');
+  INS.forEach(x=>{const c=h('div',{class:'card'});c.appendChild(h('h3',{},x.t));
+    const big=h('div',{class:'big'});big.appendChild(document.createTextNode(x.big+' '));big.appendChild(h('small',{},x.sm));c.appendChild(big);
+    c.appendChild(h('p',{},x.p));const so=h('p',{class:'so'});so.appendChild(h('b',{},'→ Với BH PVI: '));so.appendChild(document.createTextNode(x.so));c.appendChild(so);box.appendChild(c);});
+
+  const RECO=[
+    ['Đề nghị OPES chia đơn tại 2 Hub cho BH PVI','Hub Bắc, Hub Nam','Ban HK&KHDN (P.TMĐT)','Tháng 10','Mỗi 10% thị phần Hub ≈ 1,2 tỷ phí/tháng. Theo mô hình OPES đưa ra (chưa chính thức), nhân sự BH PVI đang làm nhiều việc ở Hub – đây là lý do để đề nghị.'],
+    ['Chăm sóc các chi nhánh đã có đơn BH PVI để bán thêm','13 đơn vị – nhóm 2','Đơn vị BH PVI phụ trách; P.TMĐT theo dõi','Đến 31/10','Cán bộ bán VPBank ở đây đã quen bán BH PVI, nên dễ tăng nhất. Ưu tiên Đồng Nai, Thành Nam, Lê Hồng Phong, Ninh Bình, Dak Lak.'],
+    ['Tiếp cận các chi nhánh MIC đang rút','8 đơn vị – nhóm 3','Đơn vị BH PVI phụ trách','Đến 31/10','Phần MIC để lại chưa ai giữ chắc – làm trong đợt Sale Contest, trước khi TASCO/DBV lấy mất.'],
+    ['Giới thiệu BH PVI với các chi nhánh lớn chưa ai nắm chắc','7 đơn vị – nhóm 4','Đơn vị BH PVI phụ trách','Đến 31/10','Mỗi đơn vị bán từ 200 triệu/tháng; nhà đồng lớn nhất chưa tới 60%. Lớn nhất là Bà Chiểu (~940 triệu/tháng).'],
+    ['Hỏi rõ vì sao 3 Vùng chưa có đơn BH PVI nào','Vùng 8B, Vùng 1, Vùng 3','P.TMĐT','Tuần đầu tháng 10','Vùng 8B bán khoảng 512 triệu/tuần. Cần xem đơn vị BH PVI nào phụ trách và đang vướng gì.'],
+    ['Hỏi OPES xem BH PVI có được bán ở kênh SME không','Kênh SME (chủ yếu Hà Nội)','P.TMĐT','Tháng 10','Kênh này khoảng 2,3 tỷ/tháng, MIC đang giữ gần một nửa. Khách tập trung ở Hà Nội, gần PVI Tower.'],
+    ['Cập nhật bảng này mỗi tuần','—','P.TMĐT','Hằng tuần','Gửi thêm file mapping chi nhánh để xem kết quả theo từng đơn vị trong 16 đơn vị BH PVI.'],
+  ];
+  const T=document.getElementById('reco');
+  const hr=h('tr');['','Việc cần làm','Làm ở đâu','Ai làm','Hạn (đề xuất)','Vì sao đáng làm'].forEach(x=>hr.appendChild(h('th',{},x)));const th=h('thead');th.appendChild(hr);T.appendChild(th);
+  const tb=h('tbody');RECO.forEach(([a,w,who,when,b],i)=>{const tr=h('tr');tr.appendChild(h('td',{class:'no'},String(i+1)));tr.appendChild(h('td',{class:'what'},a));tr.appendChild(h('td',{class:'where'},w));tr.appendChild(h('td',{style:'min-width:130px'},who));tr.appendChild(h('td',{class:'where'},when));tr.appendChild(h('td',{style:'color:var(--text-2)'},b));tb.appendChild(tr);});T.appendChild(tb);
+})();
+</script>
+</body>
+</html>
